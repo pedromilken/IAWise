@@ -12,8 +12,8 @@ let S, view = "home", cur = null, tab = "story", sim = null, sel = null, resetAr
 /* ---------- Estado ---------- */
 function guessLang() { const n = (navigator.language || "pt").slice(0, 2).toLowerCase(); return LANG[n] ? n : "pt"; }
 function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L0, n: 0, c: 0 });
-  return { v: 1, started: false, lang: guessLang(), skills, done: {}, failed: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0 }, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
-function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
+  return { v: 1, started: false, lang: guessLang(), skills, done: {}, failed: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0, key: 0 }, keyed: {}, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
+function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (d.inv.key == null) d.inv.key = 0; if (!d.keyed) d.keyed = {}; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
 /* Prior hierárquico: enquanto uma fase não tem nenhuma resposta, seu L0 = (1 − W)·L0_BASE + W·domínio atual do pré-requisito.
    Na primeira resposta contada o prior é congelado (tr.prior). ?prior=fixo na URL volta ao L0 fixo (para experimento).
@@ -42,7 +42,7 @@ const allDone = id => !!LS[id].sim && TASKS[LS[id].sim].every(tk => S.done[tk.id
 const preOk = id => LS[id].pre.every(p => trk(p).L >= UNLOCK || allDone(p));
 const nextOf = id => LESSONS.find(l => l.world === LS[id].world && l.n === LS[id].n + 1);
 const gateOk = id => S.xpTotal >= (LS[id].gate || 0) || !!S.opened[id];
-const unlocked = id => preOk(id) && gateOk(id);
+const unlocked = id => (preOk(id) && gateOk(id)) || !!S.keyed[id];
 const built = id => !!LS[id].sim;
 function earn(x) { S.xp += x; S.xpTotal += x; }
 const roleIdx = () => { let i = 0; ROLE_XP.forEach((x, k) => { if (S.xpTotal >= x) i = k; }); return i; };
@@ -59,7 +59,7 @@ function answer(item, ok, usedHint) {
   if (counted) { KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
   if (!ok) S.failed[item.id] = (S.failed[item.id] || 0) + 1;
   if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
-  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, keyed: S.keyed[item.skill] ? 1 : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
   msgs = [];
   const m = MODES[S.mode];
   if (ok) {
@@ -136,8 +136,9 @@ function map() {
 function wrapText(s, n) { const out = []; let cur = ""; for (const w of s.split(" ")) { if ((cur + " " + w).trim().length > n && cur) { out.push(cur); cur = w; } else cur = (cur + " " + w).trim(); } if (cur) out.push(cur); if (out.length > 2) { out.length = 2; out[1] = out[1].slice(0, n - 1) + "…"; } return out; }
 function lessonCard(id) {
   const l = LS[id], L = lsT(id), [st] = status(id), tr = trk(id), tasks = l.sim ? TASKS[l.sim] : [], done = tasks.filter(x => S.done[x.id]).length;
-  const card = el("div", { class: "skillinfo" }, el("h4", {}, t("lesson") + " " + l.n + " · " + L.name), el("p", {}, L.about), el("div", { class: "meta" }, el("span", { class: "tag " + l.world }, t(st)), el("span", { class: "tag plain" }, t("colMastery") + " " + pct(tr.L)), l.sim ? el("span", { class: "tag plain" }, done + "/" + tasks.length + " " + t("tasksH").toLowerCase()) : el("span", { class: "tag plain" }, t("soon"))));
-  if (!unlocked(id)) { const pre = l.pre.filter(p => trk(p).L < UNLOCK).map(p => lsT(p).name).join(t("and")); card.append(el("p", { class: "empty" }, pre && !gateOk(id) ? t("lockedXp", { p: pre, x: l.gate, y: S.xpTotal }) : pre ? t("locked", { p: pre }) : t("lockedXpOnly", { x: l.gate, y: S.xpTotal })), el("button", { class: "btn ghost small", onclick: () => { view = "lesson"; cur = id; tab = "mat"; render(); window.scrollTo(0, 0); } }, t("tabMat"))); }
+  const card = el("div", { class: "skillinfo" }, el("h4", {}, t("lesson") + " " + l.n + " · " + L.name), el("p", {}, L.about), el("div", { class: "meta" }, el("span", { class: "tag " + l.world }, t(st)), el("span", { class: "tag plain" }, t("colMastery") + " " + pct(tr.L)), S.keyed[id] ? el("span", { class: "tag plain" }, "🗝️ " + t("keyedTag")) : null, l.sim ? el("span", { class: "tag plain" }, done + "/" + tasks.length + " " + t("tasksH").toLowerCase()) : el("span", { class: "tag plain" }, t("soon"))));
+  if (!unlocked(id)) { const pre = l.pre.filter(p => trk(p).L < UNLOCK).map(p => lsT(p).name).join(t("and")); card.append(el("p", { class: "empty" }, pre && !gateOk(id) ? t("lockedXp", { p: pre, x: l.gate, y: S.xpTotal }) : pre ? t("locked", { p: pre }) : t("lockedXpOnly", { x: l.gate, y: S.xpTotal })), el("div", { class: "row" }, built(id) && S.inv.key > 0 ? el("button", { class: "btn small", onclick: () => { S.inv.key--; S.keyed[id] = true; S.opened[id] = true; save(); msgs = []; go("lesson", id); } }, "🗝️ " + t("useKey", { n: S.inv.key })) : null,
+      el("button", { class: "btn ghost small", onclick: () => { view = "lesson"; cur = id; tab = "mat"; render(); window.scrollTo(0, 0); } }, t("tabMat"))), built(id) && !S.inv.key ? el("p", { class: "empty" }, t("keyHint")) : null); }
   else if (!built(id)) card.append(el("p", { class: "empty" }, t("soonP")), el("button", { class: "btn ghost", onclick: () => { S.opened[id] = true; save(); go("lesson", id); tab = "mat"; render(); } }, t("tabMat")));
   else card.append(el("button", { class: "btn", onclick: () => { S.opened[id] = true; save(); go("lesson", id); } }, t("open")));
   return card;
@@ -233,10 +234,10 @@ function material(l) {
 /* --- loja --- */
 function shop() {
   const sec = el("section", { class: "work" }, el("h2", {}, t("shopH")), el("p", {}, t("shopP")));
-  const modes = el("div", { class: "panel" }, el("h3", {}, t("modeH")), el("div", { class: "modes" }, ...Object.keys(MODES).map(k => el("button", { class: "mode" + (S.mode === k ? " on" : ""), onclick: () => { S.mode = k; save(); render(); } }, el("b", {}, MODE_ICON[k] + " " + t("modes")[k]), el("span", {}, t("modeDesc")[k])))));
+
   const powers = el("div", { class: "panel" }, el("h3", {}, t("powers")), ...SHOP.filter(x => x.kind === "power").map(item));
   const titles = el("div", { class: "panel" }, el("h3", {}, t("titlesH")), ...SHOP.filter(x => x.kind === "title").map(item));
-  sec.append(modes, powers, titles); return sec;
+  sec.append(powers, titles); return sec;
   function item(x) { const [n, d] = gt().shop[x.id], own = x.kind === "title" ? S.titles.includes(x.id) : S.inv[x.id] || 0;
     const row = el("div", { class: "shopitem" }, el("span", { class: "sicon" }, x.icon), el("div", {}, el("b", {}, n), el("p", {}, d), x.kind === "power" ? el("span", { class: "empty" }, t("owned", { n: own })) : null));
     if (x.kind === "title" && own) row.append(S.title === x.id ? el("button", { class: "btn small ghost", onclick: () => { S.title = null; save(); render(); } }, t("unequip")) : el("button", { class: "btn small", onclick: () => { S.title = x.id; save(); render(); } }, t("equip")));
@@ -290,7 +291,8 @@ function settings() {
     el("label", { class: "ctl" }, el("span", {}, t("studentName")), el("input", { type: "text", value: S.name, oninput: e => { S.name = e.target.value; save(); } })),
     el("label", { class: "ctl chk" }, el("input", { type: "checkbox", ...(S.confirm ? { checked: "" } : {}), onchange: e => { S.confirm = e.target.checked; save(); render(); } }), el("span", {}, t("confirmRule"))),
     el("div", { class: "row" }, el("button", { class: "btn small ghost danger", onclick: () => { if (!resetArmed) { resetArmed = true; render(); return; } localStorage.removeItem(KEY); S = fresh(); resetArmed = false; go("home"); } }, resetArmed ? t("resetConfirm") : t("reset"))));
-  sec.append(p, llmSettings()); return sec;
+  const modes = el("div", { class: "panel" }, el("h3", {}, t("modeH")), el("div", { class: "modes" }, ...Object.keys(MODES).map(k => el("button", { class: "mode" + (S.mode === k ? " on" : ""), onclick: () => { S.mode = k; save(); render(); } }, el("b", {}, MODE_ICON[k] + " " + t("modes")[k]), el("span", {}, t("modeDesc")[k])))));
+  sec.append(p, modes, llmSettings()); return sec;
 }
 function llmSettings() {
   const c = LLM.cfg(), status = el("span", { class: "empty" });

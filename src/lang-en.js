@@ -30,7 +30,7 @@ ui: {
   allDone: "Every task in this stage is done. Keep exploring or go back to the map.",
   modeH: "Difficulty", modes: { normal: "Normal", medio: "Medium", dificil: "Hard", hardcore: "Extra hardcore" },
   modeDesc: { normal: "XP ×1. Free hints (with a hint, a hit is worth half). Each failed verification costs 2 XP per task level.", medio: "XP ×1.5. Free hints. Each failed verification costs 4 XP per level.", dificil: "XP ×2. No hints. Each failed verification costs 6 XP per level.", hardcore: "XP ×3. No hints. Each failed verification costs 10 XP per level." },
-  shopH: "Shop", shopP: "Trade XP balance for powers and titles. Spending balance does not reduce lifetime XP, which is what unlocks stages.", powers: "Powers", titlesH: "Titles", buy: "Trade for {c} XP", need: "{n} XP short (costs {c})", owned: "You have: {n}", equip: "Use this title", equipped: "In use", unequip: "Stop using",
+  shopH: "Shop", shopP: "Trade XP balance for powers and titles (difficulty lives in Settings). Spending balance does not reduce lifetime XP, which is what unlocks stages.", powers: "Powers", titlesH: "Titles", buy: "Trade for {c} XP", need: "{n} XP short (costs {c})", owned: "You have: {n}", equip: "Use this title", equipped: "In use", unequip: "Stop using",
   repH: "Learning report", repSub: "For the student and whoever supports them: what is mastered, where the misses are and what to practise next.", repFor: "Student: {n}", printedOn: "Generated on {d}",
   k1: "checks made", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
   bySkill: "Mastery by stage", colSkill: "Stage", colMastery: "Mastery", colTries: "Checks", colHits: "Hits", colStatus: "Status",
@@ -56,6 +56,7 @@ ui: {
   tutorRetry: "Try again", tutorThinking: "Thinking…", tutorBusy: "Provider busy, retrying ({n}/3)…", tutorFallback: "Model unavailable; trying the backup…", tutorOverload: "The provider is overloaded right now (not a problem with your key). Try again in a moment or pick another model/provider in Settings.",
   howPrior: "Starting point: the first stage of each world starts at {b}; each following stage starts at the average of {b} and the current mastery of the previous stage (weight {w}), frozen at the first answer. Whoever masters the perceptron enters stage 2 with more credit.", howPriorFix: "Starting point: every stage starts at {b} (fixed prior, experiment mode).",
   k5: "tasks completed", k6: "failed checks", colTasks: "Tasks", colErr: "Errors", colExtra: "Extra attempts", repLegend: "Hits and errors feed the model (only the first failure of each task). Extra attempts are repeated failed checks: they cost XP but do not lower mastery.", worldBuilt: "{b} of {n} stages with a simulator", pendH: "What is left to do", pendFails: "{n} failed attempt(s)", pendLocked: "Still locked: {s}.", pendNone: "No pending tasks in the available stages.",
+  useKey: "Use curiosity key ({n})", keyHint: "Curious to see this stage early? Trade XP for a curiosity key in the shop.", keyedTag: "opened by curiosity",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {
@@ -67,6 +68,7 @@ game: {
     shield: ["Shield", "Absorbs the XP penalty of your next failed check. Used automatically."],
     boost: ["Double XP", "Doubles the XP of your next 3 verified tasks. Active as soon as you trade."],
     lens: ["Lens", "Reveals, once, the exact state the selected task requires."],
+    key: ["Curiosity key", "Opens a locked stage of your choice without its prerequisites. Mastery does not change: you still need the tasks to master it. Use it on the stage card, on the map."],
     tNeuron: ["Golden Neuron", "A title shown next to your rank."],
     tAgent: ["Rational Agent", "A title shown next to your rank."],
     tOracle: ["Bellman's Oracle", "A title shown next to your rank."]

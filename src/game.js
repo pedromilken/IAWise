@@ -17,6 +17,7 @@ const SHOP = [
   {id:"shield", icon:"🛡️", kind:"power", cost:30},
   {id:"boost",  icon:"⚡",  kind:"power", cost:40},
   {id:"lens",   icon:"🔍",  kind:"power", cost:20},
+  {id:"key",    icon:"🗝️", kind:"power", cost:60},
   {id:"tNeuron",icon:"🧠",  kind:"title", cost:80},
   {id:"tAgent", icon:"🤖",  kind:"title", cost:80},
   {id:"tOracle",icon:"🔮",  kind:"title", cost:250}

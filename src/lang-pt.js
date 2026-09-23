@@ -30,7 +30,7 @@ ui: {
   allDone: "Todas as tarefas desta fase foram feitas. Continue explorando ou volte ao mapa.",
   modeH: "Dificuldade", modes: { normal: "Normal", medio: "Médio", dificil: "Difícil", hardcore: "Extra hardcore" },
   modeDesc: { normal: "XP ×1. Dicas grátis (com dica, o acerto vale metade). Cada verificação falha custa 2 XP por nível da tarefa.", medio: "XP ×1,5. Dicas grátis. Cada verificação falha custa 4 XP por nível.", dificil: "XP ×2. Sem dicas. Cada verificação falha custa 6 XP por nível.", hardcore: "XP ×3. Sem dicas. Cada verificação falha custa 10 XP por nível." },
-  shopH: "Loja", shopP: "Troque saldo de XP por poderes e títulos. Gastar saldo não reduz o XP acumulado, que é o que libera as fases.", powers: "Poderes", titlesH: "Títulos", buy: "Trocar por {c} XP", need: "Faltam {n} XP (custa {c})", owned: "Você tem: {n}", equip: "Usar este título", equipped: "Em uso", unequip: "Parar de usar",
+  shopH: "Loja", shopP: "Troque saldo de XP por poderes e títulos (a dificuldade fica em Ajustes). Gastar saldo não reduz o XP acumulado, que é o que libera as fases.", powers: "Poderes", titlesH: "Títulos", buy: "Trocar por {c} XP", need: "Faltam {n} XP (custa {c})", owned: "Você tem: {n}", equip: "Usar este título", equipped: "Em uso", unequip: "Parar de usar",
   repH: "Relatório de aprendizagem", repSub: "Para o estudante e para quem o acompanha: o que já está dominado, onde estão os erros e o que praticar depois.", repFor: "Estudante: {n}", printedOn: "Gerado em {d}",
   k1: "verificações feitas", k2: "acerto", k3: "fases dominadas", k4: "maior sequência",
   bySkill: "Domínio por fase", colSkill: "Fase", colMastery: "Domínio", colTries: "Verificações", colHits: "Acertos", colStatus: "Status",
@@ -56,6 +56,7 @@ ui: {
   tutorRetry: "Tentar de novo", tutorThinking: "Pensando…", tutorBusy: "Provedor ocupado, tentando de novo ({n}/3)…", tutorFallback: "Modelo indisponível; tentando o reserva…", tutorOverload: "O provedor está sobrecarregado agora (não é problema da sua chave). Tente de novo em alguns instantes ou escolha outro modelo/provedor em Ajustes.",
   howPrior: "Ponto de partida: a primeira fase de cada mundo começa em {b}; cada fase seguinte começa na média entre {b} e o domínio atual da fase anterior (peso {w}), congelada na primeira resposta. Quem domina o perceptron entra na fase 2 com mais crédito.", howPriorFix: "Ponto de partida: todas as fases começam em {b} (prior fixo, modo de experimento).",
   k5: "tarefas concluídas", k6: "verificações falhas", colTasks: "Tarefas", colErr: "Erros", colExtra: "Tentativas extras", repLegend: "Acertos e erros contam para o modelo (só a primeira falha de cada tarefa). Tentativas extras são verificações falhas repetidas: custam XP, mas não baixam o domínio.", worldBuilt: "{b} de {n} fases com simulador", pendH: "O que falta fazer", pendFails: "{n} tentativa(s) falha(s)", pendLocked: "Ainda bloqueadas: {s}.", pendNone: "Nenhuma tarefa pendente nas fases disponíveis.",
+  useKey: "Usar chave da curiosidade ({n})", keyHint: "Curioso para ver esta fase antes? Troque XP por uma chave da curiosidade na loja.", keyedTag: "aberta por curiosidade",
   worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
 },
 worlds: {
@@ -67,6 +68,7 @@ game: {
     shield: ["Escudo", "Absorve a penalidade de XP da sua próxima verificação falha. Usado automaticamente."],
     boost: ["XP em dobro", "Dobra o XP das suas próximas 3 tarefas verificadas. Ativa assim que você troca."],
     lens: ["Lente", "Mostra, uma vez, o estado exato que a tarefa selecionada exige. Vale para a tarefa em foco."],
+    key: ["Chave da curiosidade", "Abre uma fase bloqueada à sua escolha, sem precisar dos pré-requisitos. O domínio não muda: você ainda precisa das tarefas para dominá-la. Use no cartão da fase, no mapa."],
     tNeuron: ["Neurônio de Ouro", "Um título exibido ao lado da sua patente."],
     tAgent: ["Agente Racional", "Um título exibido ao lado da sua patente."],
     tOracle: ["Oráculo de Bellman", "Um título exibido ao lado da sua patente."]

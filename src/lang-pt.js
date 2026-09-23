@@ -42,11 +42,13 @@ ui: {
   dataH: "Seus dados", dataP: "O progresso fica somente neste navegador. O registro segue o formato longo dos datasets de knowledge tracing (item, habilidade, acerto, idioma, timestamp).",
   setH: "Ajustes", uiLang: "Idioma do jogo", studentName: "Nome do estudante (opcional, aparece no relatório impresso)", confirmRule: "Exigir que o domínio seja confirmado com um acerto em outro dia", theme: "Tema", themeAuto: "Automático", themeLight: "Claro", themeDark: "Escuro",
   reset: "Apagar progresso", resetConfirm: "Confirme: apagar todo o progresso", saved: "Ajustes salvos.",
+  tabMat: "Material de apoio", matSlides: "Slides da aula (PDF)", matHandout: "Resumo da aula (handout, PDF)", matSim: "Simuladores do professor", matExtras: "Material extra da aula", matLinks: "Leituras, vídeos e interativos complementares", matCommon: "Referências gerais do mundo", matSrc: "Material aberto (CC0) do Prof. Albertini, UFU/FACOM, direto do repositório da disciplina.", kinds: { read: "Leitura", video: "Vídeo", play: "Interativo", paper: "Artigo" },
+  next: "Próxima fase", nextSoon: "Próxima fase ({s}) ainda em construção; o material de apoio já está disponível no mapa.", worldAvg: "Domínio médio {p} · {m} de {n} fases dominadas", cmpNote: "Só a primeira verificação falha de cada tarefa entra no modelo; as repetidas ficam no log com counted = 0.",
   worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
 },
 worlds: {
-  nn: { name: "Máquinas que aprendem", question: "Como construir máquinas que aprendem a partir de dados?", about: "Redes neurais e deep learning: do perceptron à atenção." },
-  rl: { name: "Agentes que decidem", question: "Como construir agentes que tomam boas decisões?", about: "Aprendizagem por reforço: de MDPs a AlphaZero." }
+  nn: { name: "Máquinas que aprendem", question: "Como construir máquinas que aprendem a partir de dados?", course: "GBC073 — Inteligência Computacional", about: "Redes neurais e deep learning: do perceptron à atenção." },
+  rl: { name: "Agentes que decidem", question: "Como construir agentes que tomam boas decisões?", course: "GBC063 — Inteligência Artificial", about: "Aprendizagem por reforço: de MDPs a AlphaZero." }
 },
 game: {
   shop: {

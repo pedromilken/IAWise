@@ -25,6 +25,8 @@ Uma fase por aula (14 + 14 = 28). Cada fase segue três passos:
 | RL 1 · Introdução à RL | `rover` | política por estado, γ, derrapagem, V^π por avaliação iterativa |
 | RL 2 · Decisões com modelo | `gridworld` | iteração de valor 3×4, custo de viver, derrapagem, γ |
 
+Toda fase tem uma aba **Material de apoio** com os slides (PDF) e, no mundo 2, o handout da aula, os simuladores do próprio professor quando existem, extras do repositório e leituras, vídeos e interativos complementares selecionados por assunto — acessível mesmo em fases bloqueadas ou ainda sem simulador.
+
 As demais 21 fases já existem no mapa (nome, pré-requisito e portão de XP) e recebem história, arsenal e simulador nas próximas versões.
 
 ## Rastreamento e gamificação (herdados do DevWise)

@@ -42,11 +42,13 @@ ui: {
   dataH: "Your data", dataP: "Progress lives only in this browser. The log follows the long format of knowledge-tracing datasets (item, skill, correct, language, timestamp).",
   setH: "Settings", uiLang: "Game language", studentName: "Student name (optional, shown on the printed report)", confirmRule: "Require mastery to be confirmed by a hit on another day", theme: "Theme", themeAuto: "Automatic", themeLight: "Light", themeDark: "Dark",
   reset: "Erase progress", resetConfirm: "Confirm: erase all progress", saved: "Settings saved.",
+  tabMat: "Support material", matSlides: "Lecture slides (PDF)", matHandout: "Lecture summary (handout, PDF)", matSim: "Instructor's simulators", matExtras: "Extra lecture material", matLinks: "Complementary readings, videos and interactives", matCommon: "General references for this world", matSrc: "Open material (CC0) by Prof. Albertini, UFU/FACOM, straight from the course repository.", kinds: { read: "Reading", video: "Video", play: "Interactive", paper: "Paper" },
+  next: "Next stage", nextSoon: "Next stage ({s}) still under construction; its support material is already on the map.", worldAvg: "Average mastery {p} · {m} of {n} stages mastered", cmpNote: "Only the first failed check of each task enters the model; repeated ones stay in the log with counted = 0.",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {
-  nn: { name: "Machines that learn", question: "How do we build machines that learn from data?", about: "Neural networks and deep learning: from the perceptron to attention." },
-  rl: { name: "Agents that decide", question: "How do we build agents that make good decisions?", about: "Reinforcement learning: from MDPs to AlphaZero." }
+  nn: { name: "Machines that learn", question: "How do we build machines that learn from data?", course: "GBC073 — Computational Intelligence", about: "Neural networks and deep learning: from the perceptron to attention." },
+  rl: { name: "Agents that decide", question: "How do we build agents that make good decisions?", course: "GBC063 — Artificial Intelligence", about: "Reinforcement learning: from MDPs to AlphaZero." }
 },
 game: {
   shop: {

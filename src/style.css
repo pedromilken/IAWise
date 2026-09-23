@@ -130,3 +130,8 @@ p{margin:0 0 .8em;text-align:justify}
 .printonly{display:none}
 @media print{.top,.noprint,.tabs{display:none!important}.printonly{display:block}.wrap{padding:0}body{background:#fff;color:#000}}
 @media (max-width:820px){.home{grid-template-columns:1fr}.simbox{grid-template-columns:1fr}.ctl{grid-template-columns:110px 1fr 50px}.nav{margin-left:0}}
+.mgroup{padding:10px 0;border-top:1px solid var(--line)} .mgroup:first-of-type{border-top:0}
+.mgroup h3{font-size:1.02rem;color:var(--muted);margin-bottom:6px}
+.mlink{display:block;padding:6px 0;color:var(--ink);text-decoration:none;font-size:.97rem} .mlink:hover{text-decoration:underline}
+.mlink .tag{font-size:.75rem;margin-right:4px}
+.whead.small{margin:14px 0 6px;padding-left:10px;border-left:6px solid var(--nn)} .whead.small.rl{border-left-color:var(--rl)} .whead.small .wicon{font-size:1.5rem} .whead.small h4{font-size:1.1rem}

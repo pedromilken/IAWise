@@ -197,10 +197,10 @@ function paintTasks(l, taskEl) {
   taskEl.innerHTML = ""; taskEl.append(el("h3", {}, t("tasksH")));
   if (msgs.length) { const ok = S.log.length && S.log[S.log.length - 1].ok; taskEl.append(el("div", { class: "feedback " + (ok ? "ok" : "bad") }, el("b", {}, (ok ? t("cheers") : t("oops"))[Math.floor(Math.random() * 4)]), el("br"), msgs.join(" "))); }
   for (const tk of tasks) {
-    const done = !!S.done[tk.id], tx = L.tasks[tk.id];
+    const done = !!S.done[tk.id], tx = (L.tasks || {})[tk.id] || { t: tk.id, h: "" };
     const row = el("div", { class: "task" + (done ? " done" : "") }, el("div", { class: "tmeta" }, el("span", { class: "pts" }, "★".repeat(tk.d)), done ? el("span", { class: "chip" }, "✓ " + t("verified")) : null), el("p", {}, tx.t));
     if (!done) {
-      const acts = el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => { const ok = !!(sim && sim.check(tk.id)); answer(IT[tk.id], ok, !!hintOn[tk.id]); paintTasks(l, taskEl); const tb = $.querySelector(".top"); if (tb) tb.replaceWith(topbar()); if (ok) confetti(); } }, t("verify")));
+      const acts = el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => { const ok = !!(sim && sim.check(tk.k || tk.id)); answer(IT[tk.id], ok, !!hintOn[tk.id]); paintTasks(l, taskEl); const tb = $.querySelector(".top"); if (tb) tb.replaceWith(topbar()); if (ok) confetti(); } }, t("verify")));
       if (m.hint) { if (hintOn[tk.id]) row.append(el("p", { class: "hint" }, "💡 " + tx.h)); else acts.append(el("button", { class: "btn small ghost", onclick: () => { hintOn[tk.id] = true; paintTasks(l, taskEl); } }, t("hint"))); }
       else acts.append(el("span", { class: "empty" }, t("noHints")));
       if (S.inv.lens > 0 && !hintOn[tk.id] && lensOn !== tk.id) acts.append(el("button", { class: "btn small ghost", onclick: () => { S.inv.lens--; hintOn[tk.id] = true; lensOn = tk.id; save(); paintTasks(l, taskEl); } }, "🔍 " + gt().shop.lens[0] + " (" + S.inv.lens + ")"));

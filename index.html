@@ -1,0 +1,1243 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>IAWise</title>
+<meta name="description" content="Jogo instrutivo de redes neurais e aprendizagem por reforço com simuladores interativos, histórias e knowledge tracing. Derivado do DevWise.">
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#E8EDF1; --surface:#FFFFFF; --sunken:#DCE3EA; --ink:#15233A; --muted:#56677F; --line:#C5D0DB;
+  --nn:#0F7C7C; --nn-soft:#D5ECEA; --rl:#5546B0; --rl-soft:#E2DEF6;
+  --gold:#B97F08; --gold-soft:#FBEBC4; --ok:#1B7F53; --ok-soft:#D8F0E3; --bad:#BC3550; --bad-soft:#F8DDE2;
+  --display:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1828; --surface:#18243A; --sunken:#121D30; --ink:#E6ECF5; --muted:#9BABC2; --line:#2D3D58;
+  --nn:#45BDB6; --nn-soft:#143A40; --rl:#A296F5; --rl-soft:#2A2757;
+  --gold:#F0B73F; --gold-soft:#3D3116; --ok:#4CC98F; --ok-soft:#143B2C; --bad:#F2758E; --bad-soft:#44202B;}}
+:root[data-theme="dark"]{
+  --bg:#0F1828; --surface:#18243A; --sunken:#121D30; --ink:#E6ECF5; --muted:#9BABC2; --line:#2D3D58;
+  --nn:#45BDB6; --nn-soft:#143A40; --rl:#A296F5; --rl-soft:#2A2757;
+  --gold:#F0B73F; --gold-soft:#3D3116; --ok:#4CC98F; --ok-soft:#143B2C; --bad:#F2758E; --bad-soft:#44202B;}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5}
+button{font:inherit;color:inherit;cursor:pointer}
+button:disabled{cursor:default;opacity:.45}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--display);line-height:1.1;margin:0}
+p{margin:0 0 .8em;text-align:justify}
+.wrap{max-width:1120px;margin:0 auto;padding:0 20px 64px}
+.top{display:flex;flex-wrap:wrap;align-items:center;gap:10px 22px;padding:18px 0;border-bottom:2px solid var(--ink);margin-bottom:26px}
+.brand{font-family:var(--display);font-weight:800;font-size:1.55rem;letter-spacing:-.02em;background:none;border:0;padding:0}
+.stats{display:flex;flex-wrap:wrap;gap:6px 18px;font-size:.95rem;color:var(--muted)}
+.stats b{color:var(--ink)}
+.nav{margin-left:auto;display:flex;gap:6px;flex-wrap:wrap}
+.nav button{background:none;border:2px solid transparent;border-radius:999px;padding:5px 15px;font-weight:700}
+.nav button[aria-current="page"]{border-color:var(--ink)}
+.btn{background:var(--ink);color:var(--bg);border:2px solid var(--ink);border-radius:10px;padding:11px 22px;font-weight:700}
+.btn.ghost{background:none;color:var(--ink)}
+.btn.small{padding:6px 14px;font-size:.92rem}
+.btn.danger{border-color:var(--bad);color:var(--bad)}
+.row{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.empty{color:var(--muted);font-size:.95rem}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;margin-bottom:18px}
+.tag{padding:2px 9px;border-radius:999px;background:var(--sunken);font-size:.85rem}
+.tag.nn{background:var(--nn-soft)} .tag.rl{background:var(--rl-soft)}
+.meta{display:flex;flex-wrap:wrap;gap:6px 8px;font-size:.85rem;margin:8px 0}
+.chip{font-size:.85rem;padding:3px 10px;border-radius:6px;background:var(--ok-soft);border:1px solid var(--ok)}
+/* início */
+.home{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:start;padding-top:10px}
+.home h1{font-size:clamp(2.2rem,6vw,4rem);font-weight:800;letter-spacing:-.04em}
+.home .lead{font-size:1.12rem;max-width:36em;margin:18px 0 22px}
+.qs{display:grid;gap:10px;margin-bottom:22px}
+.q{display:grid;grid-template-columns:44px 1fr;gap:12px;align-items:center;padding:12px 14px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:.95rem}
+.q span{font-size:1.8rem;text-align:center}
+.q.nn{border-left:8px solid var(--nn)} .q.rl{border-left:8px solid var(--rl)}
+.kpis{display:flex;flex-wrap:wrap;gap:14px;margin-top:22px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 18px;min-width:120px}
+.kpi b{display:block;font-family:var(--display);font-size:1.8rem;font-weight:800;color:var(--gold)}
+.kpi span{font-size:.85rem;color:var(--muted)}
+.loop{list-style:none;margin:0;padding:0;counter-reset:s}
+.loop li{counter-increment:s;display:grid;grid-template-columns:44px 1fr;gap:14px;padding:16px 0;border-top:1px solid var(--line)}
+.loop li::before{content:counter(s);font-family:var(--display);font-weight:800;font-size:1.9rem;color:var(--gold);line-height:1}
+.loop strong{display:block}
+/* mapa */
+.world.nn{border-left:10px solid var(--nn)} .world.rl{border-left:10px solid var(--rl)}
+.whead{display:flex;gap:14px;align-items:center;margin-bottom:8px}
+.wicon{font-size:2.2rem}
+.whead h2{font-size:1.6rem;font-weight:800}
+.mapwrap{overflow-x:auto}
+.mapsvg{display:block;min-width:560px;width:100%;height:auto}
+.edge{stroke:var(--line);stroke-width:3} .edge.on{stroke:var(--gold)}
+.node{cursor:pointer}
+.node circle{fill:var(--surface);stroke:var(--line);stroke-width:3}
+.node.ok circle{fill:var(--ok-soft);stroke:var(--ok)} .node.prog circle{stroke:var(--gold)} .node.warn circle{fill:var(--gold-soft);stroke:var(--gold)}
+.node.locked circle{fill:var(--sunken)} .node.soon circle{stroke-dasharray:6 4}
+.node.sel circle{stroke:var(--ink);stroke-width:4}
+.node text{font-family:var(--body);fill:var(--ink)}
+.node .pct{font-family:var(--display);font-weight:800;font-size:14px}
+.node .lbl{font-size:11.5px}
+.node.locked .lbl,.node.soon .lbl{fill:var(--muted)}
+.skillinfo{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:.95rem}
+.skillinfo h4{font-size:1.15rem;margin:0 0 4px}
+/* fase */
+.lhead{padding:0 0 12px 16px;border-left:10px solid var(--nn);margin-bottom:14px}
+.lhead.rl{border-left-color:var(--rl)}
+.lhead h2{font-size:clamp(1.6rem,4.5vw,2.3rem);font-weight:800;margin:8px 0 4px}
+.tabs{display:flex;gap:6px;margin-bottom:16px;flex-wrap:wrap}
+.tabs button{background:var(--surface);border:2px solid var(--line);border-radius:999px;padding:7px 16px;font-weight:700}
+.tabs button[aria-selected="true"]{border-color:var(--ink);background:var(--ink);color:var(--bg)}
+.work{max-width:960px}
+.client{font-family:var(--mono);font-size:.85rem;color:var(--muted)}
+.story{font-size:1.08rem}
+.panel h3{font-size:1.25rem;margin:0 0 8px}
+.concept{padding:12px 0;border-top:1px solid var(--line)}
+.concept:first-child{border-top:0;padding-top:0}
+.concept h3{font-size:1.1rem}
+/* simulador */
+.simbox{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(280px,.8fr);gap:18px;align-items:start}
+.simarea{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px}
+.simcv{display:block;border-radius:8px;background:var(--sunken)}
+.ctls{display:grid;gap:8px;margin-top:12px}
+.ctl{display:grid;grid-template-columns:150px 1fr 56px;gap:8px;align-items:center;font-size:.92rem}
+.ctl span{color:var(--muted)} .ctl .mono{font-family:var(--mono);color:var(--ink)}
+.ctl output{font-family:var(--mono);font-size:.85rem;text-align:right}
+.ctl select,.ctl input[type=number],.ctl input[type=text]{font:inherit;padding:5px 8px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);min-width:0}
+.ctl input[type=range]{width:100%;accent-color:var(--gold)}
+.ctl.chk{grid-template-columns:auto 1fr}
+.siminfo{font-family:var(--mono);font-size:.88rem;padding:8px 10px;background:var(--sunken);border-radius:8px}
+.tasks h3{font-size:1.1rem;margin-bottom:10px}
+.task{background:var(--surface);border:1px solid var(--line);border-left:8px solid var(--gold);border-radius:4px 12px 12px 4px;padding:12px 14px;margin-bottom:10px}
+.task.done{border-left-color:var(--ok);opacity:.75}
+.task p{margin:6px 0 10px;font-size:.98rem}
+.tmeta{display:flex;justify-content:space-between;align-items:center}
+.pts{letter-spacing:2px;color:var(--gold)}
+.hint{background:var(--gold-soft);border-radius:8px;padding:8px 10px;font-size:.92rem}
+.feedback{padding:12px 14px;border-radius:10px;margin-bottom:12px;font-size:.95rem}
+.feedback.ok{background:var(--ok-soft);border:1px solid var(--ok)} .feedback.bad{background:var(--bad-soft);border:1px solid var(--bad)}
+.confetti{position:fixed;inset:0;pointer-events:none;z-index:9;overflow:hidden}
+.confetti i{position:absolute;top:-10px;width:10px;height:14px;border-radius:2px;animation:fall 1.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(105vh) rotate(540deg);opacity:.2}}
+/* loja */
+.modes{display:grid;gap:10px}
+.mode{text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:10px 14px;display:grid;gap:4px}
+.mode.on{border-color:var(--ink)} .mode span{font-size:.88rem;color:var(--muted)}
+.shopitem{display:grid;grid-template-columns:44px 1fr auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.sicon{font-size:1.8rem;text-align:center} .shopitem p{margin:2px 0;font-size:.92rem;text-align:left}
+/* relatório */
+.tbl{width:100%;border-collapse:collapse;font-size:.93rem}
+.tbl th,.tbl td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.bar{display:inline-block;width:80px;height:9px;background:var(--sunken);border-radius:4px;vertical-align:middle;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok)}
+.json{font:12px var(--mono);white-space:pre-wrap;max-height:300px;overflow:auto;background:var(--sunken);padding:10px;border-radius:8px}
+.printonly{display:none}
+@media print{.top,.noprint,.tabs{display:none!important}.printonly{display:block}.wrap{padding:0}body{background:#fff;color:#000}}
+@media (max-width:820px){.home{grid-template-columns:1fr}.simbox{grid-template-columns:1fr}.ctl{grid-template-columns:110px 1fr 50px}.nav{margin-left:0}}
+
+</style>
+</head>
+<body>
+<div class="wrap" id="app"></div>
+<script>
+"use strict";
+/* IAWise - dados independentes de idioma natural.
+   Textos ficam em src/lang-pt.js e src/lang-en.js. Estrutura derivada do DevWise (pedromilken/DevWise),
+   com o conteúdo das disciplinas GBC073 (Inteligência Computacional) e GBC063 (Inteligência Artificial), UFU/FACOM. */
+const LANG = {};
+
+/* Dois mundos = as duas disciplinas. Cada um responde a uma pergunta-guia. */
+const WORLDS = [
+  {id:"nn", icon:"🧠", color:"nn"},   // GBC073: "Como construir máquinas que aprendem a partir de dados?"
+  {id:"rl", icon:"🤖", color:"rl"}    // GBC063: "Como construir agentes que tomam boas decisões?"
+];
+
+/* Uma fase por aula. pre: fases que precisam de 60% de domínio; gate: XP acumulado exigido; sim: simulador (null = em construção).
+   x,y: posição no mapa (SVG 640 x 420 por mundo). */
+const LESSONS = [
+  /* ---- Mundo 1: redes neurais e deep learning (GBC073) ---- */
+  {id:"nn01", world:"nn", n:1, pre:[], gate:0, sim:"perceptron", x:60, y:70},
+  {id:"nn02", world:"nn", n:2, pre:["nn01"], gate:60, sim:"represent", x:180, y:70},
+  {id:"nn03", world:"nn", n:3, pre:["nn02"], gate:120, sim:"gradient", x:300, y:70},
+  {id:"nn04", world:"nn", n:4, pre:["nn03"], gate:180, sim:"backprop", x:420, y:70},
+  {id:"nn05", world:"nn", n:5, pre:["nn04"], gate:240, sim:"optimizers", x:540, y:70},
+  {id:"nn06", world:"nn", n:6, pre:["nn05"], gate:300, sim:null, x:540, y:180},
+  {id:"nn07", world:"nn", n:7, pre:["nn06"], gate:360, sim:null, x:420, y:180},
+  {id:"nn08", world:"nn", n:8, pre:["nn07"], gate:420, sim:null, x:300, y:180},
+  {id:"nn09", world:"nn", n:9, pre:["nn08"], gate:480, sim:null, x:180, y:180},
+  {id:"nn10", world:"nn", n:10, pre:["nn09"], gate:540, sim:null, x:60, y:180},
+  {id:"nn11", world:"nn", n:11, pre:["nn10"], gate:600, sim:null, x:60, y:290},
+  {id:"nn12", world:"nn", n:12, pre:["nn11"], gate:660, sim:null, x:180, y:290},
+  {id:"nn13", world:"nn", n:13, pre:["nn12"], gate:720, sim:null, x:300, y:290},
+  {id:"nn14", world:"nn", n:14, pre:["nn13"], gate:780, sim:null, x:420, y:290},
+  /* ---- Mundo 2: aprendizagem por reforço (GBC063) ---- */
+  {id:"rl01", world:"rl", n:1, pre:[], gate:0, sim:"rover", x:60, y:70},
+  {id:"rl02", world:"rl", n:2, pre:["rl01"], gate:60, sim:"gridworld", x:180, y:70},
+  {id:"rl03", world:"rl", n:3, pre:["rl02"], gate:120, sim:null, x:300, y:70},
+  {id:"rl04", world:"rl", n:4, pre:["rl03"], gate:180, sim:null, x:420, y:70},
+  {id:"rl05", world:"rl", n:5, pre:["rl04"], gate:240, sim:null, x:540, y:70},
+  {id:"rl06", world:"rl", n:6, pre:["rl05"], gate:300, sim:null, x:540, y:180},
+  {id:"rl07", world:"rl", n:7, pre:["rl06"], gate:360, sim:null, x:420, y:180},
+  {id:"rl08", world:"rl", n:8, pre:["rl07"], gate:420, sim:null, x:300, y:180},
+  {id:"rl09", world:"rl", n:9, pre:["rl08"], gate:480, sim:null, x:180, y:180},
+  {id:"rl10", world:"rl", n:10, pre:["rl09"], gate:540, sim:null, x:60, y:180},
+  {id:"rl11", world:"rl", n:11, pre:["rl10"], gate:600, sim:null, x:60, y:290},
+  {id:"rl12", world:"rl", n:12, pre:["rl11"], gate:660, sim:null, x:180, y:290},
+  {id:"rl13", world:"rl", n:13, pre:["rl12"], gate:720, sim:null, x:300, y:290},
+  {id:"rl14", world:"rl", n:14, pre:["rl13"], gate:780, sim:null, x:420, y:290}
+];
+
+/* Tarefas de cada simulador: são os "itens" do rastreamento do conhecimento.
+   d: dificuldade autoral (1 a 3), c: probabilidade de acerto ao acaso (verificação de estado tem chute baixo).
+   O texto de cada tarefa fica em lang-*.js em lessons[id].tasks[i]. A verificação vive em sims.js. */
+const TASKS = {
+  perceptron: [{id:"p1",d:1},{id:"p2",d:2},{id:"p3",d:2},{id:"p4",d:3}],
+  represent:  [{id:"r1",d:1},{id:"r2",d:2},{id:"r3",d:2},{id:"r4",d:3}],
+  gradient:   [{id:"g1",d:1},{id:"g2",d:2},{id:"g3",d:2},{id:"g4",d:3}],
+  backprop:   [{id:"b1",d:1},{id:"b2",d:2},{id:"b3",d:3},{id:"b4",d:3}],
+  optimizers: [{id:"o1",d:1},{id:"o2",d:2},{id:"o3",d:2},{id:"o4",d:3}],
+  rover:      [{id:"m1",d:1},{id:"m2",d:2},{id:"m3",d:2},{id:"m4",d:3}],
+  gridworld:  [{id:"w1",d:1},{id:"w2",d:2},{id:"w3",d:2},{id:"w4",d:3}]
+};
+const GUESS = 0.05;   // chute assumido numa verificação de estado do simulador
+
+/* IAWise - camada de jogo: economia de XP, dificuldade, loja e patentes. Derivada do DevWise. */
+
+/* Modos. mult: multiplicador de XP; pen: XP perdido por verificação falha (x dificuldade da tarefa); hint: dicas liberadas? */
+const MODES = {
+  normal:  {mult:1,   pen:2,  hint:true},
+  medio:   {mult:1.5, pen:4,  hint:true},
+  dificil: {mult:2,   pen:6,  hint:false},
+  hardcore:{mult:3,   pen:10, hint:false}
+};
+const MODE_ICON = {normal:"🌱", medio:"⚙️", dificil:"🔥", hardcore:"💀"};
+const TASK_XP = {1:10, 2:20, 3:35};    // XP base por dificuldade da tarefa
+const COMEBACK = 5;                    // bônus por acertar logo depois de um erro
+const HINT_HALF = true;                // com dica, XP cai pela metade
+
+/* Loja. kind: "power" (consumível) | "title" (cosmético, compra única). */
+const SHOP = [
+  {id:"shield", icon:"🛡️", kind:"power", cost:30},
+  {id:"boost",  icon:"⚡",  kind:"power", cost:40},
+  {id:"lens",   icon:"🔍",  kind:"power", cost:20},
+  {id:"tNeuron",icon:"🧠",  kind:"title", cost:80},
+  {id:"tAgent", icon:"🤖",  kind:"title", cost:80},
+  {id:"tOracle",icon:"🔮",  kind:"title", cost:250}
+];
+
+/* Patentes por XP acumulado. */
+const ROLE_XP = [0, 120, 350, 700, 1200];
+
+/* DevWise - modelos de rastreamento do conhecimento.
+
+   Um modelo PILOTA o jogo (calcula o domínio exibido, libera fases, escolhe a dificuldade do próximo ticket). Os demais rodam como
+   SOMBRAS: antes de cada resposta registram no log a probabilidade de acerto que previam, e atualizam o próprio estado, sem interferir.
+   A seleção segue as ferramentas do estudo de confundidores com o ENEM que podem rodar no navegador sem treino prévio:
+     elo  Elo/Rasch online com dificuldade de item e chute (estrutura do lado do item; piloto padrão)
+     irt  TRI de 3 parâmetros com habilidade por EAP numa grade de 81 pontos, só com as respostas anteriores (o "teto" psicométrico)
+     bkt  Bayesian Knowledge Tracing (Corbett e Anderson)
+     pfa  Performance Factors Analysis (sucessos e falhas anteriores)
+     afm  Additive Factor Model (contagem de oportunidades)
+   As arquiteturas profundas do estudo (DKT, DKVMN, SAKT, AKT, SAINT, SimpleKT) exigem treino em muitos alunos: o log exportado tem o
+   formato necessário para treiná-las fora do jogo.
+
+   TODOS os parâmetros abaixo são a priori de projeto, não estimativas. A recomendação do próprio estudo vale aqui: recalibrar os itens
+   na população real, a partir dos logs exportados, e republicar as dificuldades em ITEM_B. */
+const KT = (() => {
+  const sig = x => 1 / (1 + Math.exp(-x)), logit = p => Math.log(p / (1 - p)), clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+  const B_SCALE = 1.2;                                   // dificuldade autoral 1, 2, 3 vira b = -1,2, 0, +1,2 logits
+  const ITEM_B = {};                                     // recalibração empírica por item (id -> b), quando houver dados
+  const itemB = it => ITEM_B[it.id] != null ? ITEM_B[it.id] : (it.d - 2) * B_SCALE;
+  const GRID = Array.from({ length: 81 }, (_, i) => -4 + i * 0.1);
+
+  const MODELS = {
+    /* K0 e DEC calibrados por simulação (iniciante domina uma habilidade em ~10 tickets). WRONG < 1 amortece a queda após um erro isolado
+       (tolerância a deslize, como o 'slip' do BKT): sem isso um único erro num item fácil apagava dois acertos. Custo assumido: leve viés para cima. */
+    elo: { master: 0.85, K0: 1.8, DEC: 0.06, WRONG: 0.7,
+      init: L => ({ th: logit(clamp(L, .02, .98)), n: 0 }),
+      predict: (m, it, c) => c + (1 - c) * sig(m.th - itemB(it)),
+      update(m, it, c, y) { const p = this.predict(m, it, c); m.th = clamp(m.th + this.K0 / (1 + this.DEC * m.n) * (y - p) * (y ? 1 : this.WRONG), -4, 5); m.n++; },
+      mastery: m => sig(m.th) },
+    irt: { master: 0.85, shadowOnly: true,   // referência psicométrica ESTÁTICA (o "teto" do estudo): não acompanha quem está aprendendo, então nunca pilota
+      init: L => ({ mu: logit(clamp(L, .02, .98)), r: [] }),
+      post(m) { let w = GRID.map(t => Math.exp(-0.5 * Math.pow((t - m.mu) / 1.2, 2))); for (const [b, c, y] of m.r) w = w.map((x, i) => { const p = c + (1 - c) * sig(GRID[i] - b); return x * (y ? p : 1 - p); }); const s = w.reduce((a, b) => a + b, 0) || 1; return w.map(x => x / s); },
+      predict(m, it, c) { const w = this.post(m), b = itemB(it); return w.reduce((a, x, i) => a + x * (c + (1 - c) * sig(GRID[i] - b)), 0); },
+      update(m, it, c, y) { m.r.push([+itemB(it).toFixed(2), +c.toFixed(3), y ? 1 : 0]); if (m.r.length > 60) m.r.shift(); },
+      mastery(m) { const w = this.post(m); return sig(w.reduce((a, x, i) => a + x * GRID[i], 0)); } },
+    bkt: { master: 0.95, T: 0.2, SLIP: 0.1,
+      init: L => ({ L }),
+      predict(m, it, c) { return m.L * (1 - this.SLIP) + (1 - m.L) * c; },
+      update(m, it, c, y) { const s = this.SLIP, L = m.L, post = y ? L * (1 - s) / (L * (1 - s) + (1 - L) * c) : L * s / (L * s + (1 - L) * (1 - c)); m.L = Math.min(.995, post + (1 - post) * this.T); },
+      mastery: m => m.L },
+    pfa: { master: 0.85, BETA: -1.4, GAMMA: 0.75, RHO: -0.15,
+      init: L => ({ s: 0, f: 0, b0: logit(clamp(L, .02, .98)) - (-1.4) - 0.34 }),
+      lin(m) { return this.BETA + m.b0 + 0.34 + this.GAMMA * m.s + this.RHO * m.f; },
+      predict(m) { return sig(this.lin(m)); },
+      update(m, it, c, y) { if (y) m.s++; else m.f++; },
+      mastery(m) { return sig(this.lin(m)); } },
+    afm: { master: 0.85, BETA: -1.4, GAMMA: 0.45,
+      init: L => ({ n: 0, b0: logit(clamp(L, .02, .98)) - (-1.4) - 0.34 }),
+      lin(m) { return this.BETA + m.b0 + 0.34 + this.GAMMA * m.n; },
+      predict(m) { return sig(this.lin(m)); },
+      update(m) { m.n++; },
+      mastery(m) { return sig(this.lin(m)); } }
+  };
+  const IDS = Object.keys(MODELS);
+  return {
+    IDS, MODELS, itemB, PILOTS: IDS.filter(k => !MODELS[k].shadowOnly),
+    ensure(tr) { if (!tr.m) tr.m = {}; for (const k of IDS) if (!tr.m[k]) tr.m[k] = MODELS[k].init(tr.L); return tr; },
+    predictAll(tr, it, c) { this.ensure(tr); const o = {}; for (const k of IDS) o[k] = +clamp(MODELS[k].predict(tr.m[k], it, c), .001, .999).toFixed(4); return o; },
+    updateAll(tr, it, c, y) { this.ensure(tr); for (const k of IDS) MODELS[k].update(tr.m[k], it, c, y); },
+    mastery(tr, pilot) { this.ensure(tr); return clamp(MODELS[pilot].mastery(tr.m[pilot]), .001, .999); },
+    master: pilot => MODELS[pilot].master,
+    /* métricas de previsão sobre um log: Brier, AUC (Mann-Whitney) e acurácia a 0,5 */
+    score(log, k) { const rows = log.filter(l => l.preds && l.preds[k] != null); if (!rows.length) return null;
+      const brier = rows.reduce((a, l) => a + Math.pow(l.preds[k] - (l.ok ? 1 : 0), 2), 0) / rows.length, acc = rows.filter(l => (l.preds[k] >= .5) === !!l.ok).length / rows.length;
+      const pos = rows.filter(l => l.ok).map(l => l.preds[k]), neg = rows.filter(l => !l.ok).map(l => l.preds[k]); let auc = null;
+      if (pos.length && neg.length) { let w = 0; for (const a of pos) for (const b of neg) w += a > b ? 1 : a === b ? .5 : 0; auc = w / (pos.length * neg.length); }
+      return { n: rows.length, brier, auc, acc }; }
+  };
+})();
+
+/* IAWise - simuladores interativos.
+   Cada simulador exporta mount(el, api) e devolve {check(taskId) -> boolean, destroy()}.
+   api.s(key) devolve o texto do simulador no idioma atual; api.refreshTasks() repinta a lista de tarefas. */
+const SIMS = {};
+
+/* ---------- utilidades de interface ---------- */
+const H = (tag, attrs = {}, ...kids) => { const e = document.createElement(tag); for (const k in attrs) { if (k === "class") e.className = attrs[k]; else if (k === "style") e.style.cssText = attrs[k]; else if (k.startsWith("on")) e.addEventListener(k.slice(2), attrs[k]); else e.setAttribute(k, attrs[k]); } for (const c of kids.flat()) if (c != null) e.append(c.nodeType ? c : document.createTextNode(String(c))); return e; };
+function slider(label, min, max, step, val, on, fmt = v => v) {
+  const out = H("output", {}, fmt(val));
+  const inp = H("input", { type: "range", min, max, step, value: val, oninput: e => { const v = +e.target.value; out.textContent = fmt(v); on(v); } });
+  const wrap = H("label", { class: "ctl" }, H("span", {}, label), inp, out);
+  wrap.set = v => { inp.value = v; out.textContent = fmt(v); };
+  return wrap;
+}
+function select(label, opts, val, on) {
+  const sel = H("select", { onchange: e => on(e.target.value) }, ...opts.map(([v, l]) => H("option", { value: v, ...(v === val ? { selected: "" } : {}) }, l)));
+  return H("label", { class: "ctl" }, H("span", {}, label), sel);
+}
+const btn = (label, on, cls = "btn small") => H("button", { class: cls, onclick: on }, label);
+function canvas(el, w, h) {
+  const c = H("canvas", { class: "simcv" }); el.append(c);
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  c.width = w * dpr; c.height = h * dpr; c.style.width = "100%"; c.style.maxWidth = w + "px"; c.style.aspectRatio = w + "/" + h;
+  const g = c.getContext("2d"); g.scale(dpr, dpr); c.g = g; c.w = w; c.h = h; return c;
+}
+const css = v => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+const COL = () => ({ ink: css("--ink"), muted: css("--muted"), line: css("--line"), a: css("--nn"), b: css("--rl"), ok: css("--ok"), bad: css("--bad"), gold: css("--gold"), surface: css("--surface"), sunken: css("--sunken") });
+const fmt2 = v => (Math.round(v * 100) / 100).toFixed(2);
+const fmt3 = v => (Math.round(v * 1000) / 1000).toFixed(3);
+const rnd = (a, b) => a + Math.random() * (b - a);
+function seeded(seed) { let s = seed >>> 0; return () => { s = (s * 1664525 + 1013904223) >>> 0; return s / 4294967296; }; }
+
+/* =====================================================================
+   1. PERCEPTRON - fronteira linear, regra de aprendizado, XOR
+   ===================================================================== */
+SIMS.perceptron = { mount(el, api) {
+  const s = api.s;
+  const DS = {
+    and: [[-1, -1, 0], [-1, 1, 0], [1, -1, 0], [1, 1, 1]],
+    or: [[-1, -1, 0], [-1, 1, 1], [1, -1, 1], [1, 1, 1]],
+    xor: [[-1, -1, 0], [-1, 1, 1], [1, -1, 1], [1, 1, 0]]
+  };
+  const st = { ds: "and", pts: DS.and, w1: 0.6, w2: 0.6, b: -0.2, lr: 0.3, steps: 0, manual: false, best: 0 };
+  function randomSet() { const r = seeded(Date.now() & 0xffff), a = r() * Math.PI, nx = Math.cos(a), ny = Math.sin(a), c = rnd(-.3, .3), p = []; while (p.length < 14) { const x = rnd(-1, 1), y = rnd(-1, 1), m = nx * x + ny * y + c; if (Math.abs(m) > .2) p.push([x, y, m > 0 ? 1 : 0]); } return p; }
+  const pred = p => (st.w1 * p[0] + st.w2 * p[1] + st.b >= 0 ? 1 : 0);
+  const acc = () => st.pts.filter(p => pred(p) === p[2]).length / st.pts.length;
+  function step() { const wrong = st.pts.filter(p => pred(p) !== p[2]); if (!wrong.length) return; const p = wrong[Math.floor(Math.random() * wrong.length)], e = p[2] - pred(p); st.w1 += st.lr * e * p[0]; st.w2 += st.lr * e * p[1]; st.b += st.lr * e; st.steps++; st.best = Math.max(st.best, acc()); }
+  const cv = canvas(el, 460, 360), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const sW1 = slider("w₁", -3, 3, .05, st.w1, v => { st.w1 = v; st.manual = true; draw(); }, fmt2);
+  const sW2 = slider("w₂", -3, 3, .05, st.w2, v => { st.w2 = v; st.manual = true; draw(); }, fmt2);
+  const sB = slider("b", -3, 3, .05, st.b, v => { st.b = v; st.manual = true; draw(); }, fmt2);
+  const sLr = slider(s("lr"), .05, 1, .05, st.lr, v => st.lr = v, fmt2);
+  const info = H("div", { class: "siminfo" });
+  ctl.append(select(s("dataset"), [["and", "AND"], ["or", "OR"], ["random", s("random")], ["xor", "XOR"]], "and", v => { st.ds = v; st.pts = v === "random" ? randomSet() : DS[v]; reset(); }),
+    sW1, sW2, sB, sLr,
+    H("div", { class: "row" }, btn(s("step1"), () => { step(); syncS(); draw(); }), btn(s("step20"), () => { for (let i = 0; i < 20; i++) step(); syncS(); draw(); }), btn(s("reset"), () => { reset(); }, "btn small ghost")), info);
+  function syncS() { sW1.set(fmt2(st.w1)); sW2.set(fmt2(st.w2)); sB.set(fmt2(st.b)); }
+  function reset() { st.w1 = rnd(-.5, .5); st.w2 = rnd(-.5, .5); st.b = rnd(-.5, .5); st.steps = 0; st.manual = false; st.best = acc(); syncS(); draw(); }
+  function draw() {
+    const C = COL(), W = cv.w, Hh = cv.h, m = 30, sx = (W - 2 * m) / 2.6, sy = (Hh - 2 * m) / 2.6, X = x => W / 2 + x * sx, Y = y => Hh / 2 - y * sy;
+    g.clearRect(0, 0, W, Hh);
+    // regiões
+    const img = g.createImageData(W, Hh); const ca = hex(C.a), cb = hex(C.b);
+    for (let py = 0; py < Hh; py += 1) for (let px = 0; px < W; px += 1) { const x = (px - W / 2) / sx, y = (Hh / 2 - py) / sy, v = st.w1 * x + st.w2 * y + st.b, c = v >= 0 ? ca : cb, i = (py * W + px) * 4; img.data[i] = c[0]; img.data[i + 1] = c[1]; img.data[i + 2] = c[2]; img.data[i + 3] = 34; }
+    g.putImageData(img, 0, 0);
+    g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); g.moveTo(X(-1.3), Y(0)); g.lineTo(X(1.3), Y(0)); g.moveTo(X(0), Y(-1.3)); g.lineTo(X(0), Y(1.3)); g.stroke();
+    // fronteira w1 x + w2 y + b = 0
+    g.strokeStyle = C.ink; g.lineWidth = 2.5; g.beginPath();
+    if (Math.abs(st.w2) > 1e-6) { g.moveTo(X(-1.3), Y((-st.b + 1.3 * st.w1) / st.w2)); g.lineTo(X(1.3), Y((-st.b - 1.3 * st.w1) / st.w2)); }
+    else if (Math.abs(st.w1) > 1e-6) { g.moveTo(X(-st.b / st.w1), Y(-1.3)); g.lineTo(X(-st.b / st.w1), Y(1.3)); }
+    g.stroke();
+    // vetor de pesos
+    g.strokeStyle = C.gold; g.lineWidth = 2; g.beginPath(); g.moveTo(X(0), Y(0)); g.lineTo(X(st.w1 / 3), Y(st.w2 / 3)); g.stroke();
+    for (const p of st.pts) { const ok = pred(p) === p[2]; g.beginPath(); g.arc(X(p[0]), Y(p[1]), 9, 0, 7); g.fillStyle = p[2] ? C.a : C.b; g.fill(); g.lineWidth = 3; g.strokeStyle = ok ? C.surface : C.bad; g.stroke(); }
+    const a = acc();
+    info.innerHTML = ""; info.append(H("b", {}, s("acc") + ": " + Math.round(a * 100) + "%"), " · " + s("steps") + ": " + st.steps + " · " + s("best") + ": " + Math.round(st.best * 100) + "%");
+    api.refreshTasks();
+  }
+  draw();
+  return {
+    check(id) { const a = acc();
+      if (id === "p1") return st.ds === "and" && a === 1;
+      if (id === "p2") return st.ds === "random" && a === 1 && st.steps >= 1 && st.steps <= 40 && !st.manual;
+      if (id === "p3") return (st.ds === "and" || st.ds === "or") && a === 0;
+      if (id === "p4") return st.ds === "xor" && st.steps >= 40 && st.best <= .75;
+      return false; },
+    destroy() {}
+  };
+} };
+function hex(h) { h = h.replace("#", ""); if (h.length === 3) h = h.split("").map(c => c + c).join(""); return [0, 2, 4].map(i => parseInt(h.slice(i, i + 2), 16)); }
+
+/* =====================================================================
+   2. REPRESENTATIVIDADE - o que uma rede consegue aproximar
+   ===================================================================== */
+SIMS.represent = { mount(el, api) {
+  const s = api.s;
+  const TG = { abs: x => Math.abs(x), sin: x => Math.sin(3 * x), step: x => (x > 0 ? 1 : 0), bump: x => Math.exp(-8 * x * x) };
+  const N = 64, xs = Array.from({ length: N }, (_, i) => -1 + 2 * i / (N - 1));
+  const st = { tg: "abs", act: "relu", Hn: 2, steps: 0, mse: 1, net: null, showUnits: false };
+  const ACT = { relu: [z => Math.max(0, z), z => (z > 0 ? 1 : 0)], tanh: [Math.tanh, z => 1 - Math.tanh(z) ** 2] };
+  function init() { const r = seeded(Date.now() & 0xfffff); const w1 = Array.from({ length: st.Hn }, (_, j) => (j % 2 ? -1 : 1) * (1 + 2 * r())); st.net = { w1, b1: w1.map(w => -w * (r() * 1.6 - .8)), w2: Array.from({ length: st.Hn }, () => (r() - .5)), b2: 0, m: null }; st.steps = 0; st.mse = loss(); }
+  function fwd(x, n = st.net) { const f = ACT[st.act][0]; let y = n.b2; for (let j = 0; j < st.Hn; j++) y += n.w2[j] * f(n.w1[j] * x + n.b1[j]); return y; }
+  function loss() { let e = 0; for (const x of xs) e += (fwd(x) - TG[st.tg](x)) ** 2; return e / N; }
+  function train(K) { const n = st.net, [f, df] = ACT[st.act], lr = .02, b1 = .9, b2 = .999; if (!n.m) n.m = { w1: n.w1.map(() => 0), b1: n.b1.map(() => 0), w2: n.w2.map(() => 0), b2: 0, v1: n.w1.map(() => 0), vb1: n.b1.map(() => 0), v2: n.w2.map(() => 0), vb2: 0, t: 0 };
+    for (let k = 0; k < K; k++) { const gw1 = n.w1.map(() => 0), gb1 = n.b1.map(() => 0), gw2 = n.w2.map(() => 0); let gb2 = 0;
+      for (const x of xs) { const zs = n.w1.map((w, j) => w * x + n.b1[j]), hs = zs.map(f), y = n.b2 + hs.reduce((a, h, j) => a + n.w2[j] * h, 0), d = 2 * (y - TG[st.tg](x)) / N; gb2 += d; for (let j = 0; j < st.Hn; j++) { gw2[j] += d * hs[j]; const dh = d * n.w2[j] * df(zs[j]); gw1[j] += dh * x; gb1[j] += dh; } }
+      const m = n.m; m.t++; const upd = (p, gr, mm, vv) => { for (let j = 0; j < p.length; j++) { mm[j] = b1 * mm[j] + (1 - b1) * gr[j]; vv[j] = b2 * vv[j] + (1 - b2) * gr[j] * gr[j]; p[j] -= lr * (mm[j] / (1 - b1 ** m.t)) / (Math.sqrt(vv[j] / (1 - b2 ** m.t)) + 1e-8); } };
+      upd(n.w1, gw1, m.w1, m.v1); upd(n.b1, gb1, m.b1, m.vb1); upd(n.w2, gw2, m.w2, m.v2); m.b2 = b1 * m.b2 + (1 - b1) * gb2; m.vb2 = b2 * m.vb2 + (1 - b2) * gb2 * gb2; n.b2 -= lr * (m.b2 / (1 - b1 ** m.t)) / (Math.sqrt(m.vb2 / (1 - b2 ** m.t)) + 1e-8); st.steps++; }
+    st.mse = loss(); }
+  const cv = canvas(el, 460, 320), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const info = H("div", { class: "siminfo" });
+  ctl.append(select(s("target"), [["abs", "|x|"], ["sin", "sin(3x)"], ["step", s("stepfn")], ["bump", s("bump")]], "abs", v => { st.tg = v; init(); draw(); }),
+    select(s("act"), [["relu", "ReLU"], ["tanh", "tanh"]], "relu", v => { st.act = v; init(); draw(); }),
+    slider(s("hidden"), 1, 16, 1, st.Hn, v => { st.Hn = v; init(); draw(); }),
+    H("div", { class: "row" }, btn(s("train300"), () => { train(300); draw(); }), btn(s("train1500"), () => { train(1500); draw(); }), btn(s("reinit"), () => { init(); draw(); }, "btn small ghost"), btn(s("units"), () => { st.showUnits = !st.showUnits; draw(); }, "btn small ghost")), info);
+  function draw() {
+    const C = COL(), W = cv.w, Hh = cv.h, m = 28, X = x => m + (x + 1) / 2 * (W - 2 * m), Y = y => Hh - m - (y + .6) / 2.2 * (Hh - 2 * m);
+    g.clearRect(0, 0, W, Hh); g.strokeStyle = C.line; g.lineWidth = 1; g.beginPath(); g.moveTo(X(-1), Y(0)); g.lineTo(X(1), Y(0)); g.moveTo(X(0), Y(-.6)); g.lineTo(X(0), Y(1.6)); g.stroke();
+    const line = (fn, col, w, dash) => { g.strokeStyle = col; g.lineWidth = w; g.setLineDash(dash || []); g.beginPath(); xs.forEach((x, i) => { const y = Math.max(-.6, Math.min(1.6, fn(x))); i ? g.lineTo(X(x), Y(y)) : g.moveTo(X(x), Y(y)); }); g.stroke(); g.setLineDash([]); };
+    if (st.showUnits) for (let j = 0; j < st.Hn; j++) line(x => st.net.w2[j] * ACT[st.act][0](st.net.w1[j] * x + st.net.b1[j]), C.gold, 1.2, [4, 4]);
+    line(TG[st.tg], C.muted, 3, [6, 5]); line(x => fwd(x), C.a, 3);
+    g.fillStyle = C.muted; g.font = "12px sans-serif"; g.fillText("x", X(1) - 8, Y(0) + 14); g.fillText(s("legend"), m, 16);
+    info.innerHTML = ""; info.append(H("b", {}, "MSE: " + fmt3(st.mse)), " · " + s("steps") + ": " + st.steps + " · H = " + st.Hn);
+    api.refreshTasks();
+  }
+  init(); draw();
+  return { check(id) {
+    if (id === "r1") return st.tg === "abs" && st.act === "relu" && st.Hn >= 2 && st.mse < .01;
+    if (id === "r2") return st.tg === "bump" && st.act === "relu" && st.Hn === 1 && st.steps >= 300 && st.mse > .01;
+    if (id === "r3") return st.tg === "sin" && st.mse < .02;
+    if (id === "r4") return st.tg === "bump" && st.act === "relu" && st.mse < .006;
+    return false; }, destroy() {} };
+} };
+
+/* =====================================================================
+   3. APRENDENDO A REDE (parte 1) - perda, gradiente e passo
+   ===================================================================== */
+SIMS.gradient = { mount(el, api) {
+  const s = api.s;
+  const raw = [-1.5, -1, -.5, .5, 1, 1.5], k = Math.sqrt(6 / 7), xs = raw.map(x => x * k), r = seeded(42), ys = xs.map(x => 2 * x + (r() - .5) * .6);
+  const mx2 = xs.reduce((a, x) => a + x * x, 0) / 6, mxy = xs.reduce((a, x, i) => a + x * ys[i], 0) / 6, wStar = mxy / mx2, Lmin = (() => { const w = mxy / mx2; return xs.reduce((a, x, i) => a + (w * x - ys[i]) ** 2, 0) / 6; })();
+  const L = w => xs.reduce((a, x, i) => a + (w * x - ys[i]) ** 2, 0) / 6, dL = w => xs.reduce((a, x, i) => a + 2 * (w * x - ys[i]) * x, 0) / 6;
+  const st = { w: -2, lr: .1, steps: 0, manual: false, hist: [], up: 0 };
+  const cv = canvas(el, 520, 300), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const info = H("div", { class: "siminfo" });
+  const sW = slider("w", -3, 5, .05, st.w, v => { st.w = v; st.manual = true; st.hist.push(L(v)); draw(); }, fmt2);
+  const sLr = slider(s("lr"), .01, 1.2, .01, st.lr, v => st.lr = v, fmt2);
+  ctl.append(sW, sLr, H("div", { class: "row" }, btn(s("step1"), () => { const before = L(st.w); st.w -= st.lr * dL(st.w); st.w = Math.max(-40, Math.min(40, st.w)); st.steps++; const after = L(st.w); st.up = after > before ? st.up + 1 : 0; st.hist.push(after); sW.set(fmt2(st.w)); draw(); }), btn(s("reset"), () => { st.w = -2; st.steps = 0; st.manual = false; st.hist = []; st.up = 0; sW.set(fmt2(st.w)); draw(); }, "btn small ghost")), info);
+  function draw() {
+    const C = COL(), W = cv.w, Hh = cv.h, m = 28, half = W / 2 - 10;
+    g.clearRect(0, 0, W, Hh);
+    // esquerda: L(w)
+    const Lmax = 20, X = w => m + (w + 3) / 8 * (half - 2 * m), Y = l => Hh - m - Math.min(l, Lmax) / Lmax * (Hh - 2 * m);
+    g.strokeStyle = C.line; g.beginPath(); g.moveTo(X(-3), Y(0)); g.lineTo(X(5), Y(0)); g.stroke();
+    g.strokeStyle = C.a; g.lineWidth = 3; g.beginPath(); for (let w = -3; w <= 5.001; w += .05) { const y = Y(L(w)); w === -3 ? g.moveTo(X(w), y) : g.lineTo(X(w), y); } g.stroke();
+    const wv = Math.max(-3, Math.min(5, st.w)), lv = L(st.w), gr = dL(st.w);
+    g.strokeStyle = C.gold; g.lineWidth = 2; g.setLineDash([5, 4]); g.beginPath(); g.moveTo(X(wv - .8), Y(lv - .8 * gr)); g.lineTo(X(wv + .8), Y(lv + .8 * gr)); g.stroke(); g.setLineDash([]);
+    g.fillStyle = C.bad; g.beginPath(); g.arc(X(wv), Y(lv), 7, 0, 7); g.fill();
+    // seta -grad
+    const ax = X(wv), ay = Y(lv), dir = -Math.sign(gr) * Math.min(40, Math.abs(gr) * 8); g.strokeStyle = C.bad; g.beginPath(); g.moveTo(ax, ay); g.lineTo(ax + dir, ay); g.lineTo(ax + dir - Math.sign(dir) * 6, ay - 4); g.moveTo(ax + dir, ay); g.lineTo(ax + dir - Math.sign(dir) * 6, ay + 4); g.stroke();
+    g.fillStyle = C.muted; g.font = "12px sans-serif"; g.fillText("L(w)", m, 16); g.fillText("w", X(5) - 10, Y(0) + 14);
+    // direita: dados e reta
+    const ox = W / 2 + 10, X2 = x => ox + m + (x + 1.6) / 3.2 * (half - 2 * m), Y2 = y => Hh / 2 - y / 4 * (Hh - 2 * m) / 2;
+    g.strokeStyle = C.line; g.beginPath(); g.moveTo(X2(-1.6), Y2(0)); g.lineTo(X2(1.6), Y2(0)); g.moveTo(X2(0), Y2(-4)); g.lineTo(X2(0), Y2(4)); g.stroke();
+    g.strokeStyle = C.a; g.lineWidth = 2.5; g.beginPath(); g.moveTo(X2(-1.6), Y2(Math.max(-4, Math.min(4, -1.6 * st.w)))); g.lineTo(X2(1.6), Y2(Math.max(-4, Math.min(4, 1.6 * st.w)))); g.stroke();
+    xs.forEach((x, i) => { g.fillStyle = C.b; g.beginPath(); g.arc(X2(x), Y2(ys[i]), 6, 0, 7); g.fill(); g.strokeStyle = C.bad; g.lineWidth = 1; g.beginPath(); g.moveTo(X2(x), Y2(ys[i])); g.lineTo(X2(x), Y2(Math.max(-4, Math.min(4, st.w * x)))); g.stroke(); });
+    g.fillStyle = C.muted; g.fillText(s("fit"), ox + m, 16);
+    info.innerHTML = ""; info.append(H("b", {}, "L = " + fmt3(lv)), " · ∂L/∂w = " + fmt2(gr) + " · " + s("steps") + ": " + st.steps);
+    api.refreshTasks();
+  }
+  draw();
+  return { check(id) { const lv = L(st.w);
+    if (id === "g1") return lv < Lmin + .02;
+    if (id === "g2") return !st.manual && st.steps >= 1 && st.steps <= 15 && lv < Lmin + .02;
+    if (id === "g3") return st.up >= 3;
+    if (id === "g4") return !st.manual && st.steps === 1 && lv < Lmin + .0005;
+    return false; }, destroy() {} };
+} };
+
+/* =====================================================================
+   4. RETROPROPAGAÇÃO - grafo computacional e regra da cadeia
+   ===================================================================== */
+SIMS.backprop = { mount(el, api) {
+  const s = api.s;
+  const SC = { A: { x: 2, y: 1, w1: .5, b1: .5, w2: 1.5, b2: -.5 }, B: { x: -2, y: 1, w1: .5, b1: .5, w2: 1.5, b2: -.5 } };
+  const st = { sc: "A", ans: { dy: "", dw2: "", dh: "", dw1: "" }, show: false };
+  const calc = () => { const p = SC[st.sc], z = p.w1 * p.x + p.b1, h = Math.max(0, z), yh = p.w2 * h + p.b2, L = (yh - p.y) ** 2, dy = 2 * (yh - p.y), dw2 = dy * h, dh = dy * p.w2, dz = dh * (z > 0 ? 1 : 0), dw1 = dz * p.x; return { ...p, z, h, yh, L, dy, dw2, dh, dz, dw1 }; };
+  const cv = canvas(el, 560, 250), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const inputs = {}; const mk = (key, label) => { const i = H("input", { type: "number", step: "0.01", placeholder: "?", oninput: e => { st.ans[key] = e.target.value; api.refreshTasks(); } }); inputs[key] = i; return H("label", { class: "ctl" }, H("span", { class: "mono" }, label), i); };
+  ctl.append(H("div", { class: "row" }, btn(s("scA"), () => { st.sc = "A"; draw(); }), btn(s("scB"), () => { st.sc = "B"; draw(); }), btn(s("path"), () => { st.show = !st.show; draw(); }, "btn small ghost")),
+    mk("dy", "∂L/∂ŷ"), mk("dw2", "∂L/∂w₂"), mk("dh", "∂L/∂h"), mk("dw1", "∂L/∂w₁"), H("p", { class: "empty" }, s("note")));
+  function node(x, y, label, val, col) { const C = COL(); g.fillStyle = C.surface; g.strokeStyle = col; g.lineWidth = 2.5; g.beginPath(); g.roundRect(x - 44, y - 24, 88, 48, 10); g.fill(); g.stroke(); g.fillStyle = C.ink; g.font = "bold 13px sans-serif"; g.textAlign = "center"; g.fillText(label, x, y - 5); g.font = "12px monospace"; g.fillText(val, x, y + 13); }
+  function arrow(x1, y1, x2, y2, lab) { const C = COL(); g.strokeStyle = C.muted; g.lineWidth = 1.5; g.beginPath(); g.moveTo(x1, y1); g.lineTo(x2, y2); g.stroke(); if (lab) { g.fillStyle = C.gold; g.font = "11px monospace"; g.textAlign = "center"; g.fillText(lab, (x1 + x2) / 2, (y1 + y2) / 2 - 6); } }
+  function draw() {
+    const C = COL(), v = calc(); g.clearRect(0, 0, cv.w, cv.h);
+    const y0 = 70, y1 = 175;
+    node(60, y0, "x", fmt2(v.x), C.muted); node(60, y1, "w₁, b₁", fmt2(v.w1) + ", " + fmt2(v.b1), C.muted);
+    arrow(104, y0, 146, 110); arrow(104, y1, 146, 140);
+    node(190, 125, "z = w₁x+b₁", fmt2(v.z), C.a); arrow(234, 125, 276, 125, st.show ? (v.z > 0 ? "×1" : "×0") : "");
+    node(320, 125, "h = ReLU(z)", fmt2(v.h), C.a); arrow(364, 125, 406, 125, st.show ? "×w₂" : "");
+    node(320, y1 + 20, "w₂, b₂", fmt2(v.w2) + ", " + fmt2(v.b2), C.muted); arrow(364, y1 + 10, 406, 140);
+    node(450, 125, "ŷ = w₂h+b₂", fmt2(v.yh), C.b); arrow(494, 125, 520, 125, st.show ? "×2(ŷ−y)" : "");
+    node(450, y0 - 20, "y", fmt2(v.y), C.muted); arrow(494, y0 - 10, 520, 110);
+    g.fillStyle = C.ink; g.font = "bold 14px sans-serif"; g.textAlign = "left"; g.fillText("L = (ŷ−y)² = " + fmt3(v.L), 400, 40);
+    g.fillStyle = C.muted; g.font = "12px sans-serif"; g.fillText(s("sc") + " " + st.sc + (st.sc === "B" ? " · z < 0" : ""), 12, 20);
+    api.refreshTasks();
+  }
+  draw();
+  const near = (a, b) => a !== "" && Math.abs(parseFloat(a) - b) < .011;
+  return { check(id) { const v = calc();
+    if (id === "b1") return near(st.ans.dy, v.dy);
+    if (id === "b2") return near(st.ans.dw2, v.dw2);
+    if (id === "b3") return st.sc === "A" && near(st.ans.dw1, v.dw1) && near(st.ans.dh, v.dh);
+    if (id === "b4") return st.sc === "B" && near(st.ans.dw1, 0) && near(st.ans.dw2, v.dw2);
+    return false; }, destroy() {} };
+} };
+
+/* =====================================================================
+   5. OTIMIZADORES - SGD, momento e Adam correndo no mesmo terreno
+   ===================================================================== */
+SIMS.optimizers = { mount(el, api) {
+  const s = api.s;
+  const SURF = {
+    bowl: { f: (x, y) => x * x + 10 * y * y, g: (x, y) => [2 * x, 20 * y], start: [-2.2, 1.6], range: [-2.6, 2.6, -2, 2] },
+    valley: { f: (x, y) => (1 - x) ** 2 + 5 * (y - x * x) ** 2, g: (x, y) => [-2 * (1 - x) - 20 * x * (y - x * x), 10 * (y - x * x)], start: [-1.6, 1.8], range: [-2.2, 2.2, -1, 3] }
+  };
+  const st = { surf: "bowl", lr: .05, beta: .9, steps: 0, opt: {} };
+  function reset() { const p = SURF[st.surf].start; st.opt = { sgd: { p: [...p], path: [[...p]] }, mom: { p: [...p], v: [0, 0], path: [[...p]] }, adam: { p: [...p], m: [0, 0], v: [0, 0], t: 0, path: [[...p]] } }; st.steps = 0; }
+  function step(n) { const S = SURF[st.surf]; for (let k = 0; k < n; k++) {
+    const o = st.opt; let gr = S.g(...o.sgd.p); o.sgd.p = o.sgd.p.map((x, i) => x - st.lr * gr[i]);
+    gr = S.g(...o.mom.p); o.mom.v = o.mom.v.map((v, i) => st.beta * v - st.lr * gr[i]); o.mom.p = o.mom.p.map((x, i) => x + o.mom.v[i]);
+    gr = S.g(...o.adam.p); o.adam.t++; o.adam.m = o.adam.m.map((m, i) => .9 * m + .1 * gr[i]); o.adam.v = o.adam.v.map((v, i) => .999 * v + .001 * gr[i] * gr[i]); o.adam.p = o.adam.p.map((x, i) => x - st.lr * (o.adam.m[i] / (1 - .9 ** o.adam.t)) / (Math.sqrt(o.adam.v[i] / (1 - .999 ** o.adam.t)) + 1e-8));
+    for (const key of ["sgd", "mom", "adam"]) { const q = o[key].p.map(x => Number.isFinite(x) ? Math.max(-1e6, Math.min(1e6, x)) : 1e6); o[key].p = q; if (o[key].path.length < 2000) o[key].path.push([...q]); }
+    st.steps++; } }
+  const loss = key => SURF[st.surf].f(...st.opt[key].p);
+  const cv = canvas(el, 520, 380), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const info = H("div", { class: "siminfo" });
+  ctl.append(select(s("surface"), [["bowl", s("bowl")], ["valley", s("valley")]], "bowl", v => { st.surf = v; reset(); bg = null; draw(); }),
+    slider(s("lr"), .005, .2, .005, st.lr, v => { st.lr = v; }, v => v.toFixed(3)), slider("β (" + s("momentum") + ")", 0, .99, .01, st.beta, v => st.beta = v, fmt2),
+    H("div", { class: "row" }, btn(s("run10"), () => { step(10); draw(); }), btn(s("run100"), () => { step(100); draw(); }), btn(s("reset"), () => { reset(); draw(); }, "btn small ghost")), info);
+  let bg = null;
+  function draw() {
+    const C = COL(), W = cv.w, Hh = cv.h, S = SURF[st.surf], [x0, x1, y0, y1] = S.range, X = x => (x - x0) / (x1 - x0) * W, Y = y => Hh - (y - y0) / (y1 - y0) * Hh;
+    if (!bg) { bg = g.createImageData(W, Hh); const dpr = cv.width / W; const img = g.createImageData(cv.width, cv.height); const ca = hex(C.a); for (let py = 0; py < cv.height; py++) for (let px = 0; px < cv.width; px++) { const x = x0 + px / cv.width * (x1 - x0), y = y1 - py / cv.height * (y1 - y0), v = Math.log(1 + S.f(x, y)), t = Math.min(1, v / (st.surf === "bowl" ? 4 : 5.5)), i = (py * cv.width + px) * 4, band = Math.floor(v * 3) % 2 ? 0 : 18; img.data[i] = ca[0]; img.data[i + 1] = ca[1]; img.data[i + 2] = ca[2]; img.data[i + 3] = 30 + 170 * t + band; } bg = img; }
+    g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.putImageData(bg, 0, 0); g.restore();
+    const cols = { sgd: C.bad, mom: C.gold, adam: C.ok };
+    for (const key of ["sgd", "mom", "adam"]) { const p = st.opt[key].path; g.strokeStyle = cols[key]; g.lineWidth = 2; g.beginPath(); p.forEach((q, i) => { const xx = Math.max(-50, Math.min(W + 50, X(q[0]))), yy = Math.max(-50, Math.min(Hh + 50, Y(q[1]))); i ? g.lineTo(xx, yy) : g.moveTo(xx, yy); }); g.stroke(); const q = p[p.length - 1]; g.fillStyle = cols[key]; g.beginPath(); g.arc(Math.max(-50, Math.min(W + 50, X(q[0]))), Math.max(-50, Math.min(Hh + 50, Y(q[1]))), 6, 0, 7); g.fill(); }
+    g.fillStyle = C.ink; g.beginPath(); g.arc(X(st.surf === "bowl" ? 0 : 1), Y(st.surf === "bowl" ? 0 : 1), 5, 0, 7); g.fill(); g.strokeStyle = C.surface; g.lineWidth = 2; g.stroke();
+    const fl = v => v > 1e6 ? "∞" : v > 100 ? v.toExponential(1) : fmt3(v);
+    info.innerHTML = ""; info.append(H("span", { style: "color:" + cols.sgd }, "● SGD " + fl(loss("sgd"))), " · ", H("span", { style: "color:" + cols.mom }, "● " + s("momentum") + " " + fl(loss("mom"))), " · ", H("span", { style: "color:" + cols.adam }, "● Adam " + fl(loss("adam"))), " · " + s("steps") + ": " + st.steps);
+    api.refreshTasks();
+  }
+  reset(); draw();
+  return { check(id) {
+    if (id === "o1") return st.surf === "bowl" && st.steps >= 50 && loss("sgd") < .01;
+    if (id === "o2") return st.surf === "bowl" && st.steps >= 50 && loss("sgd") > 1e3 && loss("adam") < .5;
+    if (id === "o3") return st.surf === "valley" && st.steps >= 200 && loss("mom") < loss("sgd") && loss("mom") < 1;
+    if (id === "o4") return st.surf === "valley" && st.steps <= 600 && loss("adam") < .01;
+    return false; }, destroy() {} };
+} };
+
+/* =====================================================================
+   6. MARS ROVER - retorno, desconto e política num MDP de corredor
+   ===================================================================== */
+SIMS.rover = { mount(el, api) {
+  const s = api.s;
+  const N = 7, R = [1, 0, 0, 0, 0, 0, 10];
+  const st = { gamma: .9, slip: 0, pol: [null, "R", "R", "R", "R", "R", null], pos: 3, trail: [] };
+  function evalPol(pol) { let V = Array(N).fill(0); for (let k = 0; k < 400; k++) { const nv = [...V]; for (let i = 1; i < N - 1; i++) { const a = pol[i], go = a === "R" ? i + 1 : i - 1, other = a === "R" ? i - 1 : i + 1, q = t => R[t] + (t === 0 || t === N - 1 ? 0 : st.gamma * V[t]); nv[i] = (1 - st.slip) * q(go) + st.slip * q(other); } V = nv; } return V; }
+  function optimal() { let V = Array(N).fill(0), pol = [...st.pol]; for (let k = 0; k < 400; k++) { const nv = [...V]; for (let i = 1; i < N - 1; i++) { const q = t => R[t] + (t === 0 || t === N - 1 ? 0 : st.gamma * V[t]); const qr = (1 - st.slip) * q(i + 1) + st.slip * q(i - 1), ql = (1 - st.slip) * q(i - 1) + st.slip * q(i + 1); nv[i] = Math.max(qr, ql); pol[i] = qr >= ql - 1e-9 ? "R" : "L"; } V = nv; } return { V, pol }; }
+  const cv = canvas(el, 560, 260), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const info = H("div", { class: "siminfo" });
+  ctl.append(slider("γ (" + s("discount") + ")", .05, .99, .01, st.gamma, v => { st.gamma = v; draw(); }, fmt2), slider(s("slip"), 0, .4, .05, st.slip, v => { st.slip = v; draw(); }, fmt2),
+    H("div", { class: "row" }, btn(s("allR"), () => { for (let i = 1; i < N - 1; i++) st.pol[i] = "R"; draw(); }), btn(s("allL"), () => { for (let i = 1; i < N - 1; i++) st.pol[i] = "L"; draw(); }), btn(s("walk"), () => { st.pos = 3; st.trail = [3]; const go = () => { if (st.pos === 0 || st.pos === N - 1) return draw(); const a = st.pol[st.pos], slipped = Math.random() < st.slip; st.pos += (a === "R") !== slipped ? 1 : -1; st.trail.push(st.pos); draw(); setTimeout(go, 350); }; go(); }, "btn small ghost")),
+    H("p", { class: "empty" }, s("tip")), info);
+  cv.addEventListener("click", e => { const rect = cv.getBoundingClientRect(), x = (e.clientX - rect.left) / rect.width * cv.w, y = (e.clientY - rect.top) / rect.height * cv.h, i = Math.floor((x - 20) / ((cv.w - 40) / N)); if (i >= 1 && i < N - 1 && y > 120 && y < 175) { st.pol[i] = st.pol[i] === "R" ? "L" : "R"; draw(); } });
+  function draw() {
+    const C = COL(), W = cv.w, cw = (W - 40) / N, V = evalPol(st.pol); g.clearRect(0, 0, W, cv.h);
+    const vmax = Math.max(1, ...V.slice(1, -1));
+    for (let i = 0; i < N; i++) { const x = 20 + i * cw, term = i === 0 || i === N - 1;
+      g.fillStyle = term ? (i === 0 ? C.gold : C.ok) : C.sunken; g.fillRect(x + 3, 120, cw - 6, 55); g.strokeStyle = C.line; g.strokeRect(x + 3, 120, cw - 6, 55);
+      g.fillStyle = C.ink; g.font = "bold 13px sans-serif"; g.textAlign = "center"; g.fillText(term ? "+" + R[i] : "s" + (i + 1), x + cw / 2, term ? 152 : 140);
+      if (!term) { g.font = "22px sans-serif"; g.fillText(st.pol[i] === "R" ? "→" : "←", x + cw / 2, 168); const h = V[i] / vmax * 70; g.fillStyle = C.a; g.fillRect(x + cw / 2 - 14, 105 - h, 28, h); g.fillStyle = C.muted; g.font = "11px monospace"; g.fillText(fmt2(V[i]), x + cw / 2, 100 - h); }
+      if (st.pos === i) { g.font = "26px sans-serif"; g.fillText("🛸", x + cw / 2, 215); } }
+    g.fillStyle = C.muted; g.font = "12px sans-serif"; g.textAlign = "left"; g.fillText("V^π(s)", 20, 20);
+    info.innerHTML = ""; info.append(H("b", {}, "V(s4) = " + fmt3(V[3])), " · " + s("steps") + " " + st.trail.length);
+    api.refreshTasks();
+  }
+  draw();
+  const sameOpt = () => { const o = optimal(), V = evalPol(st.pol); return st.slip === 0 && o.V.every((v, i) => Math.abs(v - V[i]) < 1e-6); };
+  return { check(id) {
+    if (id === "m1") return st.slip === 0 && Math.abs(st.gamma - .9) < .011 && st.pol.slice(1, -1).every(a => a === "R") && evalPol(st.pol)[1] > 5;
+    if (id === "m2") return Math.abs(st.gamma - .5) < .06 && sameOpt() && st.pol[1] === "L" && st.pol[2] === "R";
+    if (id === "m3") return st.gamma >= .9 && sameOpt() && st.pol.slice(1, -1).every(a => a === "R");
+    if (id === "m4") return sameOpt() && st.pol[1] === "L" && st.pol[2] === "L" && st.pol[3] === "R";
+    return false; }, destroy() {} };
+} };
+
+/* =====================================================================
+   7. GRIDWORLD - iteração de valor num mundo em grade com incerteza
+   ===================================================================== */
+SIMS.gridworld = { mount(el, api) {
+  const s = api.s;
+  const ROWS = 3, COLS = 4, GOAL = [0, 3], PIT = [1, 3], WALL = [1, 1], START = [2, 0];
+  const st = { gamma: .9, slip: .2, live: -.04, V: [], sweeps: 0, delta: 1, converged: false };
+  const isT = (r, c) => (r === GOAL[0] && c === GOAL[1]) || (r === PIT[0] && c === PIT[1]);
+  const isW = (r, c) => r === WALL[0] && c === WALL[1];
+  const Rw = (r, c) => (r === GOAL[0] && c === GOAL[1]) ? 1 : (r === PIT[0] && c === PIT[1]) ? -1 : st.live;
+  const DIRS = { U: [-1, 0], D: [1, 0], L: [0, -1], R: [0, 1] }, PERP = { U: ["L", "R"], D: ["L", "R"], L: ["U", "D"], R: ["U", "D"] };
+  const move = (r, c, d) => { const [dr, dc] = DIRS[d], nr = r + dr, nc = c + dc; return (nr < 0 || nr >= ROWS || nc < 0 || nc >= COLS || isW(nr, nc)) ? [r, c] : [nr, nc]; };
+  const Q = (r, c, a, V) => { const t = [[1 - st.slip, a], [st.slip / 2, PERP[a][0]], [st.slip / 2, PERP[a][1]]]; return t.reduce((acc, [p, d]) => { const [nr, nc] = move(r, c, d); return acc + p * V[nr][nc]; }, 0); };
+  function resetV() { st.V = Array.from({ length: ROWS }, (_, r) => Array.from({ length: COLS }, (_, c) => isT(r, c) ? Rw(r, c) : 0)); st.sweeps = 0; st.delta = 1; st.converged = false; }
+  function sweep() { const nv = st.V.map(r => [...r]); let d = 0; for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { if (isT(r, c) || isW(r, c)) { nv[r][c] = isT(r, c) ? Rw(r, c) : 0; continue; } const best = Math.max(...Object.keys(DIRS).map(a => Q(r, c, a, st.V))); nv[r][c] = Rw(r, c) + st.gamma * best; d = Math.max(d, Math.abs(nv[r][c] - st.V[r][c])); } st.V = nv; st.sweeps++; st.delta = d; st.converged = d < .001; }
+  const greedy = (r, c) => Object.keys(DIRS).reduce((b, a) => Q(r, c, a, st.V) > Q(r, c, b, st.V) + 1e-9 ? a : b, "U");
+  const cv = canvas(el, 480, 360), g = cv.g;
+  const ctl = H("div", { class: "ctls" }); el.append(ctl);
+  const info = H("div", { class: "siminfo" });
+  ctl.append(slider("γ (" + s("discount") + ")", .5, 1, .01, st.gamma, v => { st.gamma = v; resetV(); draw(); }, fmt2), slider(s("slip"), 0, .5, .05, st.slip, v => { st.slip = v; resetV(); draw(); }, fmt2), slider(s("live"), -2, 0, .01, st.live, v => { st.live = v; resetV(); draw(); }, fmt2),
+    H("div", { class: "row" }, btn(s("sweep1"), () => { sweep(); draw(); }), btn(s("converge"), () => { for (let k = 0; k < 500 && !st.converged; k++) sweep(); draw(); }), btn(s("reset"), () => { resetV(); draw(); }, "btn small ghost")), info);
+  function draw() {
+    const C = COL(), cs = 100, ox = 40, oy = 30; g.clearRect(0, 0, cv.w, cv.h);
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) { const x = ox + c * cs, y = oy + r * cs, v = st.V[r][c];
+      if (isW(r, c)) { g.fillStyle = C.ink; g.fillRect(x, y, cs, cs); continue; }
+      const t = Math.max(-1, Math.min(1, v)); g.fillStyle = t >= 0 ? C.ok : C.bad; g.globalAlpha = .12 + .6 * Math.abs(t); g.fillRect(x, y, cs, cs); g.globalAlpha = 1; g.strokeStyle = C.line; g.strokeRect(x, y, cs, cs);
+      g.fillStyle = C.ink; g.textAlign = "center"; g.font = "bold 15px monospace"; g.fillText(fmt2(v), x + cs / 2, y + 24);
+      if (isT(r, c)) { g.font = "28px sans-serif"; g.fillText(Rw(r, c) > 0 ? "🏁" : "🕳️", x + cs / 2, y + 68); }
+      else { g.font = "30px sans-serif"; g.fillText({ U: "↑", D: "↓", L: "←", R: "→" }[greedy(r, c)], x + cs / 2, y + 70); }
+      if (r === START[0] && c === START[1]) { g.font = "11px sans-serif"; g.fillStyle = C.muted; g.textAlign = "right"; g.fillText(s("start"), x + cs - 5, y + cs - 5); }
+      g.fillStyle = C.muted; g.font = "10px monospace"; g.textAlign = "left"; g.fillText("(" + r + "," + c + ")", x + 4, y + cs - 5); }
+    info.innerHTML = ""; info.append(H("b", {}, s("sweeps") + ": " + st.sweeps), " · Δ = " + (st.delta < 1e-4 ? st.delta.toExponential(1) : fmt3(st.delta)) + (st.converged ? " · " + s("done") : ""));
+    api.refreshTasks();
+  }
+  resetV(); draw();
+  return { check(id) {
+    if (id === "w1") return st.converged;
+    if (id === "w2") return st.converged && Math.abs(st.slip - .2) < .01 && Math.abs(st.live + .04) < .005 && greedy(2, 3) === "L";
+    if (id === "w3") return st.converged && Math.abs(st.slip - .2) < .01 && greedy(2, 3) === "U" && st.live < -.08;
+    if (id === "w4") return st.converged && st.slip === 0 && st.gamma >= .995 && Math.abs(st.live + .04) < .005 && Math.abs(st.V[2][0] - .8) < .002;
+    return false; }, destroy() {} };
+} };
+
+LANG.pt = {
+name: "Português",
+ui: {
+  navHome: "Início", navMap: "Mapa", navShop: "Loja", navReport: "Relatório", navSettings: "Ajustes",
+  xp: "XP", balance: "Saldo", total: "XP acumulado", role: "Patente", streak: "Sequência",
+  roles: ["Aprendiz", "Assistente de laboratório", "Pesquisador(a)", "Cientista", "Oráculo"],
+  homeH: "Aprenda redes neurais e agentes inteligentes mexendo nas engrenagens",
+  homeLead: "Dois mundos, 28 fases, uma pergunta por mundo. Em cada fase você escuta uma história, monta o arsenal teórico e depois entra num simulador onde ajusta pesos, gradientes, políticas e recompensas com as próprias mãos. As tarefas do simulador são a prova de que você entendeu; um tutor de knowledge tracing acompanha o domínio de cada fase.",
+  homeQ1: "Como construir máquinas que aprendem a partir de dados?", homeQ2: "Como construir agentes que tomam boas decisões?",
+  start: "Começar pelo mapa", cont: "Continuar de onde parei",
+  steps: [["Escute a história", "Um problema real de gente real: a fábrica que precisa separar peças boas de ruins, o rover que precisa decidir para onde ir."],
+          ["Monte o arsenal", "Três conceitos essenciais explicados com analogias práticas, mais a notação que aparece nos slides do curso."],
+          ["Mexa no simulador", "Nada de decorar: você gira o botão do gradiente, vira a seta da política e vê o resultado na hora. Cada tarefa verificada vira XP e evidência de domínio."]],
+  homeSrc: "Conteúdo derivado das disciplinas GBC073 (Inteligência Computacional) e GBC063 (Inteligência Artificial), UFU/FACOM, material aberto (CC0) do Prof. Albertini.",
+  homeI18n: "Disponível em português e inglês.",
+  kPhases: "fases com simulador", kTasks: "tarefas verificáveis", kMastered: "fases dominadas",
+  mapHint: "Toque numa fase para ver detalhes. O número é a estimativa de domínio.",
+  locked: "Bloqueada: precisa de 60% em {p}.", lockedXp: "Bloqueada: precisa de 60% em {p} e {x} XP acumulado (você tem {y}).", lockedXpOnly: "Bloqueada: precisa de {x} XP acumulado (você tem {y}).",
+  soon: "Simulador em construção", soonP: "Esta fase já tem lugar no mapa. História, arsenal e simulador chegam nas próximas versões.",
+  open: "Entrar na fase", and: " e ",
+  stL: "Bloqueada", stP: "Em andamento", stM: "Dominada", stC: "A confirmar noutro dia", stB: "Liberada",
+  tabStory: "História", tabTheory: "Arsenal teórico", tabSim: "Simulador",
+  client: "Cenário", goSim: "Estou pronto: abrir o simulador", back: "Voltar ao mapa",
+  tasksH: "Tarefas do simulador", verify: "Verificar", verified: "Feita", hint: "Pedir dica", noHints: "Sem dicas neste modo.",
+  taskOk: "Tarefa verificada! +{x} XP", taskFail: "Ainda não. O simulador não está no estado pedido.", lost: "Penalidade: -{x} XP do saldo.",
+  shieldUsed: "Seu escudo absorveu a penalidade.", comeback: "Recuperação: +{x} XP por acertar logo depois de um erro.", streakMsg: "{n} seguidas! Bônus: +5 XP.",
+  boostOn: "XP em dobro: faltam {n} tarefas", masteredNow: "Fase dominada: {s}.", unlockedNow: "Nova fase liberada: {s}.", promo: "Promoção: sua patente agora é {r}.",
+  cheers: ["Mandou bem!", "Isso é entender por dentro!", "O simulador não mente: certíssimo!", "Fase avançando com estilo!"],
+  oops: ["Quase. Ajuste mais um pouco e verifique de novo.", "Errar aqui é barato: o simulador está aí para isso.", "Releia a tarefa: qual estado exatamente ela pede?", "Não foi dessa vez. A dica pode ajudar."],
+  allDone: "Todas as tarefas desta fase foram feitas. Continue explorando ou volte ao mapa.",
+  modeH: "Dificuldade", modes: { normal: "Normal", medio: "Médio", dificil: "Difícil", hardcore: "Extra hardcore" },
+  modeDesc: { normal: "XP ×1. Dicas grátis (com dica, o acerto vale metade). Cada verificação falha custa 2 XP por nível da tarefa.", medio: "XP ×1,5. Dicas grátis. Cada verificação falha custa 4 XP por nível.", dificil: "XP ×2. Sem dicas. Cada verificação falha custa 6 XP por nível.", hardcore: "XP ×3. Sem dicas. Cada verificação falha custa 10 XP por nível." },
+  shopH: "Loja", shopP: "Troque saldo de XP por poderes e títulos. Gastar saldo não reduz o XP acumulado, que é o que libera as fases.", powers: "Poderes", titlesH: "Títulos", buy: "Trocar por {c} XP", need: "Faltam {n} XP (custa {c})", owned: "Você tem: {n}", equip: "Usar este título", equipped: "Em uso", unequip: "Parar de usar",
+  repH: "Relatório de aprendizagem", repSub: "Para o estudante e para quem o acompanha: o que já está dominado, onde estão os erros e o que praticar depois.", repFor: "Estudante: {n}", printedOn: "Gerado em {d}",
+  k1: "tarefas verificadas", k2: "acerto", k3: "fases dominadas", k4: "maior sequência",
+  bySkill: "Domínio por fase", colSkill: "Fase", colMastery: "Domínio", colTries: "Verificações", colHits: "Acertos", colStatus: "Status",
+  recs: "Recomendações do tutor", recNone: "Ainda não há respostas. Verifique algumas tarefas para o tutor ter evidência.", recPriority: "Prioridade: {s} ({p} de domínio, {c} acertos em {n}).", recLocked: "Ainda bloqueadas: {s}. Abrem quando os pré-requisitos passarem de 60%.",
+  how: "Como o domínio é calculado", howP: "O tutor usa o modelo Elo/Rasch: cada fase tem uma pontuação de domínio e cada tarefa tem uma dificuldade na mesma escala. A distância entre elas dá a probabilidade de acerto; após cada verificação, a pontuação sobe ou desce proporcionalmente à surpresa. Uma fase conta como dominada a partir de {m}. Os modelos BKT, PFA, AFM e TRI 3PL rodam em segundo plano e só registram suas previsões para comparação.",
+  cmpH: "Comparação de modelos nesta trajetória", cmpP: "Antes de cada verificação, os cinco modelos registram a probabilidade de acerto que previam. Brier mede o erro da previsão (menor é melhor); AUC mede se o modelo separa acertos de erros (0,5 é acaso, 1 é perfeito).", colModel: "Modelo", colAcc: "Acurácia", noData: "sem dados",
+  models: { elo: "Elo/Rasch", irt: "TRI 3PL com EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  printBtn: "Imprimir ou salvar em PDF", download: "Baixar JSON", showJson: "Mostrar registro JSON", hideJson: "Ocultar registro JSON",
+  dataH: "Seus dados", dataP: "O progresso fica somente neste navegador. O registro segue o formato longo dos datasets de knowledge tracing (item, habilidade, acerto, idioma, timestamp).",
+  setH: "Ajustes", uiLang: "Idioma do jogo", studentName: "Nome do estudante (opcional, aparece no relatório impresso)", confirmRule: "Exigir que o domínio seja confirmado com um acerto em outro dia", theme: "Tema", themeAuto: "Automático", themeLight: "Claro", themeDark: "Escuro",
+  reset: "Apagar progresso", resetConfirm: "Confirme: apagar todo o progresso", saved: "Ajustes salvos.",
+  worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
+},
+worlds: {
+  nn: { name: "Máquinas que aprendem", question: "Como construir máquinas que aprendem a partir de dados?", about: "Redes neurais e deep learning: do perceptron à atenção." },
+  rl: { name: "Agentes que decidem", question: "Como construir agentes que tomam boas decisões?", about: "Aprendizagem por reforço: de MDPs a AlphaZero." }
+},
+game: {
+  shop: {
+    shield: ["Escudo", "Absorve a penalidade de XP da sua próxima verificação falha. Usado automaticamente."],
+    boost: ["XP em dobro", "Dobra o XP das suas próximas 3 tarefas verificadas. Ativa assim que você troca."],
+    lens: ["Lente", "Mostra, uma vez, o estado exato que a tarefa selecionada exige. Vale para a tarefa em foco."],
+    tNeuron: ["Neurônio de Ouro", "Um título exibido ao lado da sua patente."],
+    tAgent: ["Agente Racional", "Um título exibido ao lado da sua patente."],
+    tOracle: ["Oráculo de Bellman", "Um título exibido ao lado da sua patente."]
+  }
+},
+sims: {
+  perceptron: { dataset: "Conjunto", random: "Aleatório (separável)", lr: "Taxa de aprendizado", step1: "Um passo de treino", step20: "20 passos", reset: "Zerar pesos", acc: "Acurácia", steps: "Passos", best: "Melhor" },
+  represent: { target: "Função-alvo", stepfn: "degrau", bump: "lombada", act: "Ativação", hidden: "Unidades ocultas (H)", train300: "Treinar ×300", train1500: "Treinar ×1500", reinit: "Reiniciar pesos", units: "Ver cada unidade", legend: "tracejado: alvo · cheio: rede", steps: "Passos" },
+  gradient: { lr: "Taxa de aprendizado (η)", step1: "Um passo de gradiente", reset: "Reiniciar (w = -2)", steps: "Passos", fit: "reta w·x sobre os dados" },
+  backprop: { scA: "Cenário A", scB: "Cenário B (z < 0)", path: "Mostrar derivadas locais", sc: "Cenário", note: "Digite cada derivada com duas casas decimais e clique em Verificar na tarefa correspondente." },
+  optimizers: { surface: "Terreno", bowl: "Tigela alongada", valley: "Vale curvo (Rosenbrock)", lr: "Taxa de aprendizado", momentum: "Momento", run10: "10 passos", run100: "100 passos", reset: "Reiniciar", steps: "Passos" },
+  rover: { discount: "desconto", slip: "Prob. de derrapar", allR: "Tudo →", allL: "Tudo ←", walk: "Soltar o rover", tip: "Clique numa célula para virar a seta da política. As barras mostram V^π(s): o retorno esperado seguindo a sua política.", steps: "passos da última caminhada" },
+  gridworld: { discount: "desconto", slip: "Prob. de derrapar", live: "Recompensa por passo", sweep1: "Uma varredura", converge: "Até convergir", reset: "Zerar V", start: "início", sweeps: "Varreduras", done: "convergiu" }
+},
+lessons: {
+  nn01: { name: "Perceptron", about: "Neurônio artificial, fronteira linear e a regra de aprendizado.", client: "Triagem de peças na Metalúrgica São José",
+    title: "A máquina que separa peça boa de peça ruim",
+    story: "Na linha de inspeção, cada peça é medida em duas coisas: peso e brilho. Dona Célia, com trinta anos de olho treinado, olha e decide: aprovada ou refugo. Ela quer se aposentar e a fábrica precisa que uma máquina aprenda a mesma decisão. O primeiro modelo que os engenheiros tentam é o mais simples possível: uma reta no plano peso × brilho. De um lado, aprova; do outro, refuga. A pergunta é se essa reta consegue ser encontrada sozinha, a partir dos exemplos que Dona Célia já classificou, e se toda decisão dela cabe numa reta.",
+    theory: [
+      ["Um neurônio é uma soma ponderada com um limiar", "O perceptron calcula w₁x₁ + w₂x₂ + b e dispara (classe 1) se o resultado for maior ou igual a zero. Os pesos w dizem quanto cada medida importa; o viés b desloca a fronteira. Geometricamente, a equação w·x + b = 0 é uma reta, e o vetor w aponta para o lado que a rede chama de 1. Analogia: uma balança de dois pratos com um contrapeso fixo."],
+      ["A regra de aprendizado corrige só quando erra", "Para cada exemplo errado, ajuste w ← w + η(y − ŷ)x e b ← b + η(y − ŷ). Se a rede disse 0 e era 1, os pesos são puxados na direção do ponto; se disse 1 e era 0, empurrados para longe. Rosenblatt provou que, se existe uma reta que separa as classes, esse procedimento a encontra em um número finito de passos."],
+      ["Limite: só o que é linearmente separável", "Minsky e Papert (1969) mostraram que o XOR não cabe numa reta: os pontos (0,1) e (1,0) de uma classe cercam os (0,0) e (1,1) da outra. Nenhum ajuste de w resolve. A saída, que levou anos para ser aceita, é empilhar neurônios em camadas, tema da próxima fase."]
+    ],
+    tasks: { p1: { t: "Faça a rede acertar 100% no conjunto AND (à mão ou treinando).", h: "AND só é 1 no canto superior direito. Empurre a reta para cortar esse canto sozinho: w positivos e b bem negativo." },
+             p2: { t: "Escolha o conjunto Aleatório, zere os pesos e deixe a regra de treino chegar a 100% em no máximo 40 passos, sem tocar nos sliders.", h: "Cada passo corrige um ponto errado. Uma taxa de aprendizado entre 0,2 e 0,5 costuma bastar." },
+             p3: { t: "Sem mudar de conjunto (AND ou OR), leve a acurácia a 0%.", h: "Troque o sinal de w₁, w₂ e b ao mesmo tempo. A reta é a mesma; só o lado que a rede chama de 1 vira." },
+             p4: { t: "No XOR, dê pelo menos 40 passos de treino e observe que o melhor resultado nunca passa de 75%.", h: "Não há reta que resolva o XOR. O teorema de convergência só vale quando ela existe." } }
+  },
+  nn02: { name: "O que uma rede representa", about: "Camada oculta, ativações e aproximação de funções.", client: "Laboratório de calibração da Metalúrgica",
+    title: "Uma reta não faz curva",
+    story: "Depois do perceptron, o time descobriu que o sensor de brilho responde de forma estranha: a leitura sobe até um certo ponto, cai e volta a subir. A relação entre o valor bruto e o valor real do brilho é uma curva com lombadas. Um único neurônio linear traça uma reta, e reta não faz curva. A ideia dos engenheiros foi juntar vários neurônios simples e somar suas saídas, cada um cuidando de um pedaço da curva. Surpresa: com unidades suficientes, a soma consegue imitar praticamente qualquer forma.",
+    theory: [
+      ["Camada oculta: cada unidade é um pedaço de função", "Uma rede com uma camada oculta calcula ŷ = Σⱼ w₂ⱼ · g(w₁ⱼ x + b₁ⱼ) + b₂. Cada unidade oculta j aplica uma função de ativação g a uma reta. Com ReLU, cada unidade é uma dobradiça: zero até um ponto, depois uma rampa. A saída é a soma de rampas, uma linha quebrada capaz de imitar qualquer curva contínua se houver dobras suficientes."],
+      ["Teorema da aproximação universal", "Cybenko (1989) e Hornik (1991) provaram que uma camada oculta com ativação não linear e unidades suficientes aproxima qualquer função contínua num intervalo fechado, com o erro que se queira. O teorema garante que a rede existe; não diz quantas unidades são necessárias nem como encontrar os pesos. Analogia: peças de Lego bastam para construir qualquer forma, mas ninguém promete quantas nem em que ordem."],
+      ["Ativação define o que cada peça consegue fazer", "Sem ativação (g identidade), somar retas dá outra reta: a camada oculta não acrescenta nada. ReLU dá dobras; tanh dá degraus suaves. Uma única unidade ReLU não representa uma lombada, porque tem só uma dobra; são precisas pelo menos duas ou três. Contar dobras é uma boa forma de estimar quantas unidades um problema pede."]
+    ],
+    tasks: { r1: { t: "Aproxime |x| com ReLU e pelo menos 2 unidades ocultas até MSE < 0,010.", h: "|x| tem uma dobra em zero: duas rampas em direções opostas bastam." },
+             r2: { t: "Selecione a lombada com ReLU e H = 1, treine pelo menos 300 passos e observe que o erro não cai abaixo de 0,010.", h: "Uma unidade ReLU só tem uma dobra. A lombada precisa subir e descer." },
+             r3: { t: "Aproxime sin(3x) com MSE < 0,020 (qualquer ativação, qualquer H).", h: "Conte as dobras da senoide no intervalo: são várias. Aumente H e treine mais de uma vez." },
+             r4: { t: "Aproxime a lombada com ReLU até MSE < 0,006.", h: "Três ou quatro dobras bem posicionadas fazem uma lombada. Se travar, reinicie os pesos e treine de novo." } }
+  },
+  nn03: { name: "Aprendendo a rede I", about: "Função de perda, gradiente e descida.", client: "Ajuste do sensor de peso",
+    title: "Descer a montanha no nevoeiro",
+    story: "O sensor de peso da fábrica tem um fator de calibração w: o peso real é w vezes a leitura. Ninguém sabe o w certo, mas há seis peças de peso conhecido. Para cada palpite de w, dá para medir o erro médio quadrático entre o que o sensor diz e o que a balança padrão marca. Traçando o erro para cada w, aparece uma parábola: um vale. O técnico está no nevoeiro, sem enxergar o vale inteiro, mas consegue sentir a inclinação do chão sob os pés. A estratégia é sempre dar um passo para o lado que desce.",
+    theory: [
+      ["Perda mede a distância até o que queremos", "Para regressão, a perda quadrática média é L(w) = (1/n) Σᵢ (w·xᵢ − yᵢ)². Ela é sempre positiva, zero só quando acertamos tudo, e penaliza erros grandes mais que pequenos. Escolher a perda é escolher o que significa 'errar' para o problema."],
+      ["Gradiente é a inclinação do chão", "A derivada ∂L/∂w diz quanto a perda muda se w aumentar um pouco. Positiva: subindo, então w deve diminuir. Negativa: descendo, então w deve aumentar. A regra da descida de gradiente é w ← w − η · ∂L/∂w. O sinal do gradiente dá a direção; a magnitude e η dão o tamanho do passo."],
+      ["A taxa de aprendizado é o tamanho da passada", "η pequeno: chega, mas devagar. η grande demais: pula para o outro lado do vale e pode oscilar até divergir. Para uma parábola existe uma passada exata que chega ao fundo em um único passo, e ela depende da curvatura (segunda derivada). Redes reais têm milhões de w e nenhuma parábola perfeita; por isso η vira um dos hiperparâmetros mais importantes."]
+    ],
+    tasks: { g1: { t: "Leve a perda para perto do mínimo (dentro de 0,02 do menor valor possível), de qualquer forma.", h: "Arraste w e observe a bolinha descer o vale." },
+             g2: { t: "Reinicie (w = −2) e chegue perto do mínimo usando só o botão de passo, em no máximo 15 passos.", h: "η em torno de 0,3 desce rápido sem passar do ponto." },
+             g3: { t: "Escolha um η que faça a perda AUMENTAR por três passos seguidos.", h: "Acima de η = 1, cada passo pula para mais longe do outro lado do vale." },
+             g4: { t: "Reinicie e encontre o η que chega ao fundo do vale em exatamente um passo.", h: "Para L(w) = a·w² + …, a passada exata é 1/(2a). Aqui, a média de x² foi calibrada para 1." } }
+  },
+  nn04: { name: "Aprendendo a rede II: retropropagação", about: "Grafo computacional e regra da cadeia.", client: "Rede de duas camadas do controle de qualidade",
+    title: "De quem é a culpa pelo erro?",
+    story: "A rede da inspeção agora tem duas camadas: a entrada passa por um neurônio ReLU e depois por uma saída linear. Ela previu 1,75 para uma peça cujo valor certo era 1. O erro está lá na ponta, mas os pesos que precisam mudar estão espalhados pelo caminho. Como repartir a culpa? A resposta é caminhar de trás para frente, multiplicando as responsabilidades locais: é a regra da cadeia aplicada a um grafo. O nome é retropropagação, e é o que faz o deep learning ser computável.",
+    theory: [
+      ["Um grafo computacional decompõe a conta", "z = w₁x + b₁ → h = ReLU(z) → ŷ = w₂h + b₂ → L = (ŷ − y)². Cada nó faz uma operação simples e conhece a própria derivada local: ∂L/∂ŷ = 2(ŷ − y); ∂ŷ/∂h = w₂; ∂h/∂z = 1 se z > 0, senão 0; ∂z/∂w₁ = x."],
+      ["Regra da cadeia: multiplique ao longo do caminho", "∂L/∂w₁ = ∂L/∂ŷ · ∂ŷ/∂h · ∂h/∂z · ∂z/∂w₁. Cada fator é uma responsabilidade local; o produto é a responsabilidade total. Retropropagar é calcular esses produtos de trás para frente, reaproveitando resultados: o valor ∂L/∂h serve para w₁ e para b₁."],
+      ["Neurônio morto: gradiente zero interrompe a cadeia", "Se z < 0, a ReLU devolve 0 e sua derivada também é 0. Tudo que vem antes desse nó recebe gradiente nulo e para de aprender, mesmo que a saída esteja errada. Por isso existem variantes (Leaky ReLU, GELU) e por isso a inicialização importa."]
+    ],
+    tasks: { b1: { t: "No cenário A, calcule ∂L/∂ŷ.", h: "L = (ŷ − y)², então ∂L/∂ŷ = 2(ŷ − y)." },
+             b2: { t: "No cenário A, calcule ∂L/∂w₂.", h: "ŷ = w₂h + b₂: a derivada em relação a w₂ é h. Multiplique por ∂L/∂ŷ." },
+             b3: { t: "No cenário A, calcule ∂L/∂h e ∂L/∂w₁.", h: "∂L/∂h = ∂L/∂ŷ · w₂. Depois passe pela ReLU (z > 0, fator 1) e por z = w₁x + b₁ (fator x)." },
+             b4: { t: "No cenário B, calcule ∂L/∂w₂ e ∂L/∂w₁.", h: "Repare que z < 0: a ReLU está desligada. O que acontece com tudo que está antes dela?" } }
+  },
+  nn05: { name: "Treinar é otimizar", about: "SGD, momento, Adam e a geometria da perda.", client: "Time de deep learning da Metalúrgica",
+    title: "Três corredores no mesmo vale",
+    story: "A rede cresceu e o treino ficou lento. Um estagiário sugere aumentar a taxa de aprendizado; o modelo explode. Outro sugere diminuir; o treino leva a noite toda. A chefe do time desenha o problema no quadro: a superfície de perda não é uma tigela redonda, é um vale estreito e torto. A descida simples ziguezagueia de parede em parede. Há duas ideias clássicas para escapar disso: lembrar da direção que vinha dando certo (momento) e usar um passo diferente para cada parâmetro (Adam).",
+    theory: [
+      ["SGD: o gradiente de um lote, não do conjunto inteiro", "Calcular o gradiente sobre todos os dados é caro; usar um minilote dá uma estimativa ruidosa mas barata. O ruído até ajuda a sair de mínimos ruins. A regra continua θ ← θ − η∇L. O problema é geométrico: em vales alongados o gradiente aponta para a parede, não para o fundo."],
+      ["Momento: uma bola que ganha velocidade", "v ← βv − η∇L; θ ← θ + v. O parâmetro acumula velocidade nas direções consistentes e cancela o zigue-zague nas direções que trocam de sinal. Com β = 0,9, a bola lembra dos últimos ~10 passos. Nesterov olha um passo à frente antes de corrigir."],
+      ["Adam: um passo adaptado a cada parâmetro", "Adam mantém uma média do gradiente (m) e uma média do gradiente ao quadrado (v) e usa θ ← θ − η · m̂/(√v̂ + ε). Parâmetros com gradientes grandes recebem passos menores; com gradientes pequenos, maiores. Isso o torna robusto à escolha de η, mas não é mágica: em alguns problemas SGD com momento generaliza melhor."]
+    ],
+    tasks: { o1: { t: "Na tigela alongada, escolha um η que leve o SGD abaixo de 0,010 em pelo menos 50 passos.", h: "A direção y tem curvatura 10× maior. O SGD só é estável com η < 0,1." },
+             o2: { t: "Na tigela, encontre um η em que o SGD diverge (perda acima de 1000) enquanto o Adam ainda chega abaixo de 0,5.", h: "Adam normaliza o passo por parâmetro; o SGD não. Experimente η ≥ 0,12 e 50 passos ou mais." },
+             o3: { t: "No vale curvo, mostre que o momento chega a uma perda menor que a do SGD após 200 passos, ficando abaixo de 1.", h: "Use η pequeno (0,01) e β = 0,9. O SGD fica preso no ziguezague; a bola com momento ganha velocidade ao longo do vale." },
+             o4: { t: "No vale curvo, leve o Adam abaixo de 0,010 em no máximo 600 passos.", h: "Adam aguenta η maior que o SGD neste terreno: tente 0,05 a 0,1." } }
+  },
+  nn06: { name: "A rede que decora", about: "Sobreajuste, regularização e generalização." },
+  nn07: { name: "Redes que enxergam", about: "Convolução, filtros e invariância." },
+  nn08: { name: "Redes que leem", about: "Sequências, recorrência e memória." },
+  nn09: { name: "Atenção", about: "Quando a rede aprende onde olhar." },
+  nn10: { name: "Aprender sem professor", about: "Autoencoders e embeddings." },
+  nn11: { name: "Memória e mapas", about: "Hopfield, Kohonen e aprendizado hebbiano." },
+  nn12: { name: "Interpolação e campos neurais", about: "Aplicações: representar sinais com redes." },
+  nn13: { name: "Classificação em escala", about: "Projeto de redes para problemas grandes." },
+  nn14: { name: "O mapa da inteligência computacional", about: "Encerramento: os três paradigmas e o que ficou." },
+
+  rl01: { name: "Introdução à aprendizagem por reforço", about: "Recompensa, retorno, desconto e política.", client: "Rover no cânion de Marte",
+    title: "Dez pontos lá longe ou um ponto aqui perto",
+    story: "Um rover está parado num corredor de sete posições. Na ponta esquerda há uma amostra de rocha comum, que vale 1 ponto de ciência. Na ponta direita, uma amostra rara, que vale 10. Cada movimento consome bateria e tempo, e a missão pode ser cancelada a qualquer momento. O rover não escolhe uma vez: ele precisa de uma regra que diga, em cada posição, para que lado ir. Essa regra é a política. O quanto ele valoriza o futuro em relação ao presente é o desconto. E o valor de estar numa posição é o total de recompensa que ele espera acumular a partir dali.",
+    theory: [
+      ["O ciclo agente-ambiente", "A cada instante o agente observa o estado s, escolhe uma ação a, o ambiente devolve uma recompensa r e o próximo estado s'. O objetivo não é a recompensa imediata, mas o retorno: G = r₁ + γ r₂ + γ² r₃ + …. O fator de desconto γ ∈ [0,1) torna a soma finita e expressa quanto o futuro vale hoje: com γ = 0,9, uma recompensa daqui a 10 passos vale 0,9¹⁰ ≈ 35% de uma agora."],
+      ["Política e função de valor", "Uma política π diz qual ação tomar em cada estado. A função de valor V^π(s) é o retorno esperado começando em s e seguindo π. Para o rover com política 'sempre à direita', V(s₂) = γ⁴ · 10, porque são cinco movimentos até a amostra rara. Comparar V^π de políticas diferentes é o jeito de saber qual é melhor."],
+      ["Equação de Bellman: o valor de hoje depende do valor de amanhã", "V^π(s) = Σ_a π(a|s) Σ_s' P(s'|s,a)[R + γ V^π(s')]. É uma relação recursiva: o valor de um estado é a recompensa imediata mais o valor descontado de onde se chega. Ela permite calcular V^π iterativamente, sem simular caminhadas, e é a base de tudo que vem depois."]
+    ],
+    tasks: { m1: { t: "Com γ = 0,90 e sem derrapagem, faça a política levar o rover à amostra rara a partir de s2 com V(s2) > 5.", h: "Todas as setas para a direita. Cinco passos: 0,9⁴ × 10 ≈ 6,6." },
+             m2: { t: "Ajuste γ = 0,50 e encontre a política ótima: ela vai para a esquerda em s2 e para a direita em s3.", h: "Com γ pequeno o futuro vale pouco: em s2, 1 ponto aqui do lado vence 10 pontos a cinco passos (10 × 0,5⁴ = 0,6). Em s3, 10 × 0,5³ = 1,25 vence 0,5." },
+             m3: { t: "Com γ ≥ 0,90, encontre a política ótima (todas as setas para a direita).", h: "Quando o futuro vale quase tanto quanto o presente, vale a pena andar até a amostra rara de qualquer lugar." },
+             m4: { t: "Encontre um γ em que a política ótima seja ← em s2, ← em s3 e → em s4, e configure-a.", h: "Em s3: ir à esquerda vale γ; ir à direita vale 10γ³. Esquerda vence quando γ² < 0,1, ou seja, γ < 0,32." } }
+  },
+  rl02: { name: "Decisões com modelo do mundo", about: "MDPs, iteração de valor e políticas ótimas.", client: "Rover num terreno com buraco",
+    title: "Quando o chão escorrega",
+    story: "O terreno agora é uma grade de 3 × 4. Numa célula está a base (+1); ao lado dela, um buraco (−1) de onde o rover não sai. Há uma pedra que bloqueia uma célula. O pior: o solo é arenoso, e em 20% das vezes o rover derrapa para um dos lados em vez de ir para onde mandaram. Cada passo gasta um pouco de bateria. A equipe tem o modelo completo do mundo: sabe as probabilidades e as recompensas. Com isso, dá para calcular a melhor política antes de mover uma roda, repetindo a equação de Bellman até os valores pararem de mudar.",
+    theory: [
+      ["MDP: estados, ações, transições, recompensas e desconto", "Um processo de decisão de Markov é a tupla (S, A, P, R, γ). A propriedade de Markov diz que o futuro depende só do estado atual, não do caminho. Com P e R conhecidos (o 'modelo do mundo'), não é preciso experimentar: dá para planejar."],
+      ["Iteração de valor", "Comece com V = 0 e repita V(s) ← R(s) + γ max_a Σ_s' P(s'|s,a) V(s') para todo s. Cada varredura propaga informação uma célula adiante, como uma onda saindo da base. A sequência converge para V* (o operador de Bellman é uma contração), e a política gulosa em V* é ótima."],
+      ["Risco, custo de viver e horizonte", "Três botões mudam a política ótima: a probabilidade de derrapar (quanto risco há em passar perto do buraco), a recompensa por passo (quão caro é demorar) e γ (quão longe o agente olha). Um custo por passo muito negativo faz o rover arriscar o caminho curto; derrapagem alta o faz preferir o caminho longo colado na parede."]
+    ],
+    tasks: { w1: { t: "Rode a iteração de valor até convergir (Δ < 0,001).", h: "Cada varredura muda menos que a anterior. O botão 'Até convergir' repete varreduras enquanto Δ for grande." },
+             w2: { t: "Com derrapagem 0,20 e recompensa por passo −0,04, converja e observe que na célula (2,3), embaixo do buraco, a ação gulosa é ← (contornar).", h: "Subir de (2,3) cai no buraco em 80% das vezes. Ir para a esquerda mantém o rover longe dele, mesmo derrapando." },
+             w3: { t: "Mantenha derrapagem 0,20 e torne a recompensa por passo tão negativa que, em (2,3), subir direto passe a ser a ação gulosa.", h: "Quando cada passo dói muito, o caminho longo custa mais que o risco. Tente valores abaixo de −0,4." },
+             w4: { t: "Sem derrapagem, γ = 1,00 e recompensa −0,04, converja e confirme que V(início) = 0,80.", h: "Do início até a base são 5 células não terminais: 5 × (−0,04) + 1 = 0,80." } }
+  },
+  rl03: { name: "Avaliação de política sem modelo", about: "Monte Carlo e diferença temporal." },
+  rl04: { name: "Controle sem modelo", about: "Q-Learning, SARSA e aproximação de função valor." },
+  rl05: { name: "Gradientes de política I", about: "REINFORCE e o teorema do gradiente de política." },
+  rl06: { name: "Gradientes de política II", about: "Variância, regiões de confiança e PPO." },
+  rl07: { name: "PPO, GAE e imitação", about: "Estimativa de vantagem e aprender com demonstrações." },
+  rl08: { name: "Imitação, recompensa e RLHF", about: "Aprender a função de recompensa a partir de humanos." },
+  rl09: { name: "Bandidos e arrependimento", about: "Exploração vs. explotação, UCB e regret." },
+  rl10: { name: "Aprendizado rápido II", about: "Exploração eficiente e limites de amostra." },
+  rl11: { name: "Bandidos bayesianos", about: "Thompson sampling e crenças sobre recompensas." },
+  rl12: { name: "Aprendizagem rápida em MDPs", about: "Otimismo, bônus de exploração e eficiência amostral." },
+  rl13: { name: "MCTS e a família AlphaZero", about: "Busca em árvore Monte Carlo guiada por rede." },
+  rl14: { name: "MCTS II: AlphaZero", about: "Auto-jogo, política e valor numa só rede." }
+}
+};
+
+LANG.en = {
+name: "English",
+ui: {
+  navHome: "Home", navMap: "Map", navShop: "Shop", navReport: "Report", navSettings: "Settings",
+  xp: "XP", balance: "Balance", total: "Lifetime XP", role: "Rank", streak: "Streak",
+  roles: ["Apprentice", "Lab assistant", "Researcher", "Scientist", "Oracle"],
+  homeH: "Learn neural networks and intelligent agents by turning the gears yourself",
+  homeLead: "Two worlds, 28 stages, one question per world. In each stage you hear a story, build a theory toolkit and then step into a simulator where you adjust weights, gradients, policies and rewards with your own hands. Simulator tasks are the proof that you understood; a knowledge-tracing tutor follows your mastery of every stage.",
+  homeQ1: "How do we build machines that learn from data?", homeQ2: "How do we build agents that make good decisions?",
+  start: "Start from the map", cont: "Continue where I left off",
+  steps: [["Hear the story", "A real problem from real people: the factory that must sort good parts from bad ones, the rover that must decide where to go."],
+          ["Build the toolkit", "Three essential concepts explained with practical analogies, plus the notation used in the course slides."],
+          ["Play with the simulator", "No memorizing: you turn the gradient knob, flip the policy arrow and see the result at once. Every verified task becomes XP and evidence of mastery."]],
+  homeSrc: "Content derived from the courses GBC073 (Computational Intelligence) and GBC063 (Artificial Intelligence), UFU/FACOM, open material (CC0) by Prof. Albertini.",
+  homeI18n: "Available in Portuguese and English.",
+  kPhases: "stages with a simulator", kTasks: "verifiable tasks", kMastered: "stages mastered",
+  mapHint: "Tap a stage for details. The number is the estimated mastery.",
+  locked: "Locked: needs 60% in {p}.", lockedXp: "Locked: needs 60% in {p} and {x} lifetime XP (you have {y}).", lockedXpOnly: "Locked: needs {x} lifetime XP (you have {y}).",
+  soon: "Simulator under construction", soonP: "This stage already has its place on the map. Story, toolkit and simulator arrive in the next versions.",
+  open: "Enter the stage", and: " and ",
+  stL: "Locked", stP: "In progress", stM: "Mastered", stC: "To confirm on another day", stB: "Unlocked",
+  tabStory: "Story", tabTheory: "Theory toolkit", tabSim: "Simulator",
+  client: "Scenario", goSim: "I'm ready: open the simulator", back: "Back to the map",
+  tasksH: "Simulator tasks", verify: "Verify", verified: "Done", hint: "Ask for a hint", noHints: "No hints in this mode.",
+  taskOk: "Task verified! +{x} XP", taskFail: "Not yet. The simulator is not in the requested state.", lost: "Penalty: -{x} XP from your balance.",
+  shieldUsed: "Your shield absorbed the penalty.", comeback: "Comeback: +{x} XP for getting it right just after a miss.", streakMsg: "{n} in a row! Bonus: +5 XP.",
+  boostOn: "Double XP: {n} tasks left", masteredNow: "Stage mastered: {s}.", unlockedNow: "New stage unlocked: {s}.", promo: "Promotion: your rank is now {r}.",
+  cheers: ["Nice one!", "That is understanding from the inside!", "The simulator doesn't lie: spot on!", "Stage advancing with style!"],
+  oops: ["Almost. Adjust a little more and verify again.", "Missing here is cheap: that's what the simulator is for.", "Reread the task: which exact state does it ask for?", "Not this time. The hint may help."],
+  allDone: "Every task in this stage is done. Keep exploring or go back to the map.",
+  modeH: "Difficulty", modes: { normal: "Normal", medio: "Medium", dificil: "Hard", hardcore: "Extra hardcore" },
+  modeDesc: { normal: "XP ×1. Free hints (with a hint, a hit is worth half). Each failed verification costs 2 XP per task level.", medio: "XP ×1.5. Free hints. Each failed verification costs 4 XP per level.", dificil: "XP ×2. No hints. Each failed verification costs 6 XP per level.", hardcore: "XP ×3. No hints. Each failed verification costs 10 XP per level." },
+  shopH: "Shop", shopP: "Trade XP balance for powers and titles. Spending balance does not reduce lifetime XP, which is what unlocks stages.", powers: "Powers", titlesH: "Titles", buy: "Trade for {c} XP", need: "{n} XP short (costs {c})", owned: "You have: {n}", equip: "Use this title", equipped: "In use", unequip: "Stop using",
+  repH: "Learning report", repSub: "For the student and whoever supports them: what is mastered, where the misses are and what to practise next.", repFor: "Student: {n}", printedOn: "Generated on {d}",
+  k1: "tasks verified", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
+  bySkill: "Mastery by stage", colSkill: "Stage", colMastery: "Mastery", colTries: "Checks", colHits: "Hits", colStatus: "Status",
+  recs: "Tutor recommendations", recNone: "No answers yet. Verify a few tasks so the tutor has evidence.", recPriority: "Priority: {s} ({p} mastery, {c} hits out of {n}).", recLocked: "Still locked: {s}. They open when the prerequisites pass 60%.",
+  how: "How mastery is computed", howP: "The tutor uses the Elo/Rasch model: each stage has a mastery score and each task a difficulty on the same scale. The gap gives the probability of a hit; after each check the score moves up or down in proportion to the surprise. A stage counts as mastered from {m}. BKT, PFA, AFM and 3PL IRT run in the background and only record their predictions for comparison.",
+  cmpH: "Model comparison on this trajectory", cmpP: "Before each check the five models record the hit probability they predicted. Brier measures prediction error (lower is better); AUC measures whether the model separates hits from misses (0.5 is chance, 1 is perfect).", colModel: "Model", colAcc: "Accuracy", noData: "no data",
+  models: { elo: "Elo/Rasch", irt: "3PL IRT with EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  printBtn: "Print or save as PDF", download: "Download JSON", showJson: "Show JSON log", hideJson: "Hide JSON log",
+  dataH: "Your data", dataP: "Progress lives only in this browser. The log follows the long format of knowledge-tracing datasets (item, skill, correct, language, timestamp).",
+  setH: "Settings", uiLang: "Game language", studentName: "Student name (optional, shown on the printed report)", confirmRule: "Require mastery to be confirmed by a hit on another day", theme: "Theme", themeAuto: "Automatic", themeLight: "Light", themeDark: "Dark",
+  reset: "Erase progress", resetConfirm: "Confirm: erase all progress", saved: "Settings saved.",
+  worldQ: "World question", lesson: "Lecture", of: "of"
+},
+worlds: {
+  nn: { name: "Machines that learn", question: "How do we build machines that learn from data?", about: "Neural networks and deep learning: from the perceptron to attention." },
+  rl: { name: "Agents that decide", question: "How do we build agents that make good decisions?", about: "Reinforcement learning: from MDPs to AlphaZero." }
+},
+game: {
+  shop: {
+    shield: ["Shield", "Absorbs the XP penalty of your next failed check. Used automatically."],
+    boost: ["Double XP", "Doubles the XP of your next 3 verified tasks. Active as soon as you trade."],
+    lens: ["Lens", "Reveals, once, the exact state the selected task requires."],
+    tNeuron: ["Golden Neuron", "A title shown next to your rank."],
+    tAgent: ["Rational Agent", "A title shown next to your rank."],
+    tOracle: ["Bellman's Oracle", "A title shown next to your rank."]
+  }
+},
+sims: {
+  perceptron: { dataset: "Dataset", random: "Random (separable)", lr: "Learning rate", step1: "One training step", step20: "20 steps", reset: "Reset weights", acc: "Accuracy", steps: "Steps", best: "Best" },
+  represent: { target: "Target function", stepfn: "step", bump: "bump", act: "Activation", hidden: "Hidden units (H)", train300: "Train ×300", train1500: "Train ×1500", reinit: "Re-init weights", units: "Show each unit", legend: "dashed: target · solid: network", steps: "Steps" },
+  gradient: { lr: "Learning rate (η)", step1: "One gradient step", reset: "Reset (w = -2)", steps: "Steps", fit: "line w·x over the data" },
+  backprop: { scA: "Scenario A", scB: "Scenario B (z < 0)", path: "Show local derivatives", sc: "Scenario", note: "Type each derivative with two decimals and click Verify on the matching task." },
+  optimizers: { surface: "Terrain", bowl: "Elongated bowl", valley: "Curved valley (Rosenbrock)", lr: "Learning rate", momentum: "Momentum", run10: "10 steps", run100: "100 steps", reset: "Reset", steps: "Steps" },
+  rover: { discount: "discount", slip: "Slip probability", allR: "All →", allL: "All ←", walk: "Release the rover", tip: "Click a cell to flip the policy arrow. Bars show V^π(s): the expected return following your policy.", steps: "steps in the last walk" },
+  gridworld: { discount: "discount", slip: "Slip probability", live: "Reward per step", sweep1: "One sweep", converge: "Until convergence", reset: "Reset V", start: "start", sweeps: "Sweeps", done: "converged" }
+},
+lessons: {
+  nn01: { name: "Perceptron", about: "Artificial neuron, linear boundary and the learning rule.", client: "Part sorting at São José Metalworks",
+    title: "The machine that tells good parts from bad ones",
+    story: "On the inspection line every part is measured on two things: weight and shine. Dona Célia, with thirty years of trained eyes, looks and decides: approved or scrap. She wants to retire and the factory needs a machine to learn the same decision. The first model the engineers try is the simplest possible: a straight line on the weight × shine plane. On one side, approve; on the other, scrap. The question is whether that line can be found on its own, from the examples Dona Célia already labelled, and whether every decision she makes fits on a line.",
+    theory: [
+      ["A neuron is a weighted sum with a threshold", "The perceptron computes w₁x₁ + w₂x₂ + b and fires (class 1) if the result is greater than or equal to zero. The weights w say how much each measurement matters; the bias b shifts the boundary. Geometrically, w·x + b = 0 is a line, and the vector w points to the side the network calls 1. Analogy: a two-pan scale with a fixed counterweight."],
+      ["The learning rule only corrects on mistakes", "For each misclassified example, update w ← w + η(y − ŷ)x and b ← b + η(y − ŷ). If the network said 0 and it was 1, the weights are pulled towards the point; if it said 1 and it was 0, pushed away. Rosenblatt proved that if a separating line exists, this procedure finds one in a finite number of steps."],
+      ["Limit: only what is linearly separable", "Minsky and Papert (1969) showed that XOR does not fit on a line: the points (0,1) and (1,0) of one class surround (0,0) and (1,1) of the other. No adjustment of w solves it. The way out, which took years to be accepted, is stacking neurons in layers, the topic of the next stage."]
+    ],
+    tasks: { p1: { t: "Make the network score 100% on the AND set (by hand or by training).", h: "AND is only 1 in the top-right corner. Push the line to cut that corner alone: positive weights and a clearly negative b." },
+             p2: { t: "Choose the Random set, reset the weights and let the training rule reach 100% in at most 40 steps, without touching the sliders.", h: "Each step corrects one wrong point. A learning rate between 0.2 and 0.5 is usually enough." },
+             p3: { t: "Without changing the set (AND or OR), bring accuracy down to 0%.", h: "Flip the sign of w₁, w₂ and b at the same time. The line is the same; only the side the network calls 1 flips." },
+             p4: { t: "On XOR, take at least 40 training steps and observe that the best result never exceeds 75%.", h: "No line solves XOR. The convergence theorem only holds when one exists." } }
+  },
+  nn02: { name: "What a network can represent", about: "Hidden layer, activations and function approximation.", client: "Calibration lab at the Metalworks",
+    title: "A line cannot bend",
+    story: "After the perceptron, the team discovered that the shine sensor responds oddly: the reading rises up to a point, drops and rises again. The relation between raw value and true shine is a curve with bumps. A single linear neuron draws a line, and a line cannot bend. The engineers' idea was to combine several simple neurons and add their outputs, each one taking care of a piece of the curve. Surprise: with enough units, the sum can imitate almost any shape.",
+    theory: [
+      ["Hidden layer: every unit is a piece of a function", "A one-hidden-layer network computes ŷ = Σⱼ w₂ⱼ · g(w₁ⱼ x + b₁ⱼ) + b₂. Each hidden unit j applies an activation g to a line. With ReLU, each unit is a hinge: zero up to a point, then a ramp. The output is a sum of ramps, a broken line that can imitate any continuous curve if there are enough bends."],
+      ["Universal approximation theorem", "Cybenko (1989) and Hornik (1991) proved that one hidden layer with a non-linear activation and enough units approximates any continuous function on a closed interval to any desired accuracy. The theorem guarantees the network exists; it does not say how many units are needed nor how to find the weights. Analogy: Lego bricks can build any shape, but nobody promises how many or in what order."],
+      ["The activation defines what each piece can do", "Without an activation (g = identity), adding lines gives another line: the hidden layer adds nothing. ReLU gives bends; tanh gives smooth steps. A single ReLU unit cannot represent a bump, because it has only one bend; at least two or three are needed. Counting bends is a good way to estimate how many units a problem asks for."]
+    ],
+    tasks: { r1: { t: "Approximate |x| with ReLU and at least 2 hidden units until MSE < 0.010.", h: "|x| has one bend at zero: two ramps in opposite directions are enough." },
+             r2: { t: "Select the bump with ReLU and H = 1, train at least 300 steps and observe that the error does not fall below 0.010.", h: "One ReLU unit has a single bend. The bump must go up and come down." },
+             r3: { t: "Approximate sin(3x) with MSE < 0.020 (any activation, any H).", h: "Count the bends of the sine wave in the interval: several. Increase H and train more than once." },
+             r4: { t: "Approximate the bump with ReLU until MSE < 0.006.", h: "Three or four well-placed bends make a bump. If it gets stuck, re-init the weights and train again." } }
+  },
+  nn03: { name: "Learning the network I", about: "Loss function, gradient and descent.", client: "Weight sensor calibration",
+    title: "Walking downhill in the fog",
+    story: "The factory's weight sensor has a calibration factor w: true weight is w times the reading. Nobody knows the right w, but there are six parts of known weight. For each guess of w one can measure the mean squared error between what the sensor says and what the reference scale shows. Plotting the error for every w reveals a parabola: a valley. The technician is in the fog, unable to see the whole valley, but can feel the slope of the ground under his feet. The strategy is always to take a step towards the downhill side.",
+    theory: [
+      ["The loss measures the distance to what we want", "For regression, the mean squared loss is L(w) = (1/n) Σᵢ (w·xᵢ − yᵢ)². It is always positive, zero only when we get everything right, and it punishes large errors more than small ones. Choosing the loss is choosing what 'being wrong' means for the problem."],
+      ["The gradient is the slope of the ground", "The derivative ∂L/∂w says how much the loss changes if w grows a little. Positive: going up, so w should decrease. Negative: going down, so w should increase. The gradient-descent rule is w ← w − η · ∂L/∂w. The sign of the gradient gives the direction; its magnitude and η give the step size."],
+      ["The learning rate is the length of the stride", "Small η: arrives, but slowly. Too large: jumps to the other side of the valley and may oscillate until it diverges. For a parabola there is an exact stride that reaches the bottom in a single step, and it depends on the curvature (second derivative). Real networks have millions of w and no perfect parabola; that is why η becomes one of the most important hyperparameters."]
+    ],
+    tasks: { g1: { t: "Bring the loss close to the minimum (within 0.02 of the smallest possible value), any way you like.", h: "Drag w and watch the ball roll down the valley." },
+             g2: { t: "Reset (w = −2) and get close to the minimum using only the step button, in at most 15 steps.", h: "η around 0.3 goes down fast without overshooting." },
+             g3: { t: "Pick an η that makes the loss INCREASE for three consecutive steps.", h: "Above η = 1, each step jumps further away to the other side of the valley." },
+             g4: { t: "Reset and find the η that reaches the bottom of the valley in exactly one step.", h: "For L(w) = a·w² + …, the exact stride is 1/(2a). Here the mean of x² was calibrated to 1." } }
+  },
+  nn04: { name: "Learning the network II: backpropagation", about: "Computational graph and the chain rule.", client: "Two-layer quality-control network",
+    title: "Who is to blame for the error?",
+    story: "The inspection network now has two layers: the input goes through a ReLU neuron and then a linear output. It predicted 1.75 for a part whose true value was 1. The error sits at the very end, but the weights that need to change are spread along the path. How to share the blame? The answer is to walk backwards, multiplying local responsibilities: the chain rule applied to a graph. Its name is backpropagation, and it is what makes deep learning computable.",
+    theory: [
+      ["A computational graph breaks the calculation down", "z = w₁x + b₁ → h = ReLU(z) → ŷ = w₂h + b₂ → L = (ŷ − y)². Each node does one simple operation and knows its own local derivative: ∂L/∂ŷ = 2(ŷ − y); ∂ŷ/∂h = w₂; ∂h/∂z = 1 if z > 0, else 0; ∂z/∂w₁ = x."],
+      ["Chain rule: multiply along the path", "∂L/∂w₁ = ∂L/∂ŷ · ∂ŷ/∂h · ∂h/∂z · ∂z/∂w₁. Each factor is a local responsibility; the product is the total responsibility. Backpropagating means computing these products from back to front, reusing results: the value ∂L/∂h serves both w₁ and b₁."],
+      ["Dead neuron: a zero gradient breaks the chain", "If z < 0, ReLU returns 0 and its derivative is also 0. Everything before that node receives a null gradient and stops learning, even though the output is wrong. That is why variants exist (Leaky ReLU, GELU) and why initialization matters."]
+    ],
+    tasks: { b1: { t: "In scenario A, compute ∂L/∂ŷ.", h: "L = (ŷ − y)², so ∂L/∂ŷ = 2(ŷ − y)." },
+             b2: { t: "In scenario A, compute ∂L/∂w₂.", h: "ŷ = w₂h + b₂: the derivative with respect to w₂ is h. Multiply by ∂L/∂ŷ." },
+             b3: { t: "In scenario A, compute ∂L/∂h and ∂L/∂w₁.", h: "∂L/∂h = ∂L/∂ŷ · w₂. Then pass through the ReLU (z > 0, factor 1) and through z = w₁x + b₁ (factor x)." },
+             b4: { t: "In scenario B, compute ∂L/∂w₂ and ∂L/∂w₁.", h: "Notice that z < 0: the ReLU is off. What happens to everything before it?" } }
+  },
+  nn05: { name: "Training is optimizing", about: "SGD, momentum, Adam and the geometry of the loss.", client: "The Metalworks deep learning team",
+    title: "Three runners in the same valley",
+    story: "The network grew and training got slow. One intern suggests raising the learning rate; the model blows up. Another suggests lowering it; training takes all night. The team lead draws the problem on the board: the loss surface is not a round bowl, it is a narrow, crooked valley. Plain descent zigzags from wall to wall. There are two classic ideas to escape that: remember the direction that was working (momentum) and use a different step for each parameter (Adam).",
+    theory: [
+      ["SGD: the gradient of a batch, not of the whole set", "Computing the gradient over all data is expensive; using a mini-batch gives a noisy but cheap estimate. The noise even helps escape bad minima. The rule is still θ ← θ − η∇L. The problem is geometric: in elongated valleys the gradient points at the wall, not at the bottom."],
+      ["Momentum: a ball that gains speed", "v ← βv − η∇L; θ ← θ + v. The parameter accumulates velocity in consistent directions and cancels the zigzag in directions that flip sign. With β = 0.9 the ball remembers the last ~10 steps. Nesterov looks one step ahead before correcting."],
+      ["Adam: a step adapted to each parameter", "Adam keeps an average of the gradient (m) and of the squared gradient (v) and uses θ ← θ − η · m̂/(√v̂ + ε). Parameters with large gradients get smaller steps; with small gradients, larger ones. That makes it robust to the choice of η, but it is not magic: on some problems SGD with momentum generalizes better."]
+    ],
+    tasks: { o1: { t: "On the elongated bowl, choose an η that takes SGD below 0.010 in at least 50 steps.", h: "The y direction has 10× the curvature. SGD is only stable with η < 0.1." },
+             o2: { t: "On the bowl, find an η where SGD diverges (loss above 1000) while Adam still gets below 0.5.", h: "Adam normalizes the step per parameter; SGD does not. Try η ≥ 0.12 and 50 steps or more." },
+             o3: { t: "On the curved valley, show that momentum reaches a lower loss than SGD after 200 steps, staying below 1.", h: "Use a small η (0.01) and β = 0.9. SGD gets stuck zigzagging; the ball with momentum gains speed along the valley." },
+             o4: { t: "On the curved valley, take Adam below 0.010 in at most 600 steps.", h: "Adam tolerates a larger η than SGD on this terrain: try 0.05 to 0.1." } }
+  },
+  nn06: { name: "The network that memorizes", about: "Overfitting, regularization and generalization." },
+  nn07: { name: "Networks that see", about: "Convolution, filters and invariance." },
+  nn08: { name: "Networks that read", about: "Sequences, recurrence and memory." },
+  nn09: { name: "Attention", about: "When the network learns where to look." },
+  nn10: { name: "Learning without a teacher", about: "Autoencoders and embeddings." },
+  nn11: { name: "Memory and maps", about: "Hopfield, Kohonen and Hebbian learning." },
+  nn12: { name: "Interpolation and neural fields", about: "Applications: representing signals with networks." },
+  nn13: { name: "Classification at scale", about: "Designing networks for large problems." },
+  nn14: { name: "The map of computational intelligence", about: "Closing: the three paradigms and what remains." },
+
+  rl01: { name: "Introduction to reinforcement learning", about: "Reward, return, discount and policy.", client: "Rover in a Martian canyon",
+    title: "Ten points far away or one point right here",
+    story: "A rover sits in a corridor of seven positions. At the left end there is a common rock sample worth 1 science point. At the right end, a rare sample worth 10. Every move consumes battery and time, and the mission may be cancelled at any moment. The rover does not choose once: it needs a rule that says, at each position, which way to go. That rule is the policy. How much it values the future relative to the present is the discount. And the value of being at a position is the total reward it expects to accumulate from there.",
+    theory: [
+      ["The agent-environment loop", "At each instant the agent observes state s, chooses action a, the environment returns a reward r and the next state s'. The goal is not the immediate reward but the return: G = r₁ + γ r₂ + γ² r₃ + …. The discount factor γ ∈ [0,1) makes the sum finite and expresses how much the future is worth today: with γ = 0.9, a reward 10 steps away is worth 0.9¹⁰ ≈ 35% of one now."],
+      ["Policy and value function", "A policy π says which action to take in each state. The value function V^π(s) is the expected return starting at s and following π. For the rover with policy 'always right', V(s₂) = γ⁴ · 10, because it takes five moves to reach the rare sample. Comparing V^π of different policies is how we know which is better."],
+      ["Bellman equation: today's value depends on tomorrow's", "V^π(s) = Σ_a π(a|s) Σ_s' P(s'|s,a)[R + γ V^π(s')]. It is a recursive relation: the value of a state is the immediate reward plus the discounted value of where you land. It lets us compute V^π iteratively, without simulating walks, and it is the basis of everything that follows."]
+    ],
+    tasks: { m1: { t: "With γ = 0.90 and no slipping, make the policy take the rover to the rare sample from s2 with V(s2) > 5.", h: "All arrows to the right. Five steps: 0.9⁴ × 10 ≈ 6.6." },
+             m2: { t: "Set γ = 0.50 and find the optimal policy: it goes left at s2 and right at s3.", h: "With small γ the future is worth little: at s2, 1 point next door beats 10 points five steps away (10 × 0.5⁴ = 0.6). At s3, 10 × 0.5³ = 1.25 beats 0.5." },
+             m3: { t: "With γ ≥ 0.90, find the optimal policy (all arrows to the right).", h: "When the future is worth almost as much as the present, walking to the rare sample pays off from anywhere." },
+             m4: { t: "Find a γ where the optimal policy is ← at s2, ← at s3 and → at s4, and configure it.", h: "At s3: going left is worth γ; going right is worth 10γ³. Left wins when γ² < 0.1, that is, γ < 0.32." } }
+  },
+  rl02: { name: "Decisions with a model of the world", about: "MDPs, value iteration and optimal policies.", client: "Rover on terrain with a pit",
+    title: "When the ground slips",
+    story: "The terrain is now a 3 × 4 grid. One cell holds the base (+1); next to it, a pit (−1) the rover cannot leave. A rock blocks one cell. Worse: the soil is sandy, and 20% of the time the rover slips sideways instead of going where it was told. Every step drains a little battery. The team has the complete model of the world: it knows the probabilities and the rewards. With that, the best policy can be computed before moving a wheel, by repeating the Bellman equation until the values stop changing.",
+    theory: [
+      ["MDP: states, actions, transitions, rewards and discount", "A Markov decision process is the tuple (S, A, P, R, γ). The Markov property says the future depends only on the current state, not on the path. With P and R known (the 'model of the world'), no experimenting is needed: one can plan."],
+      ["Value iteration", "Start with V = 0 and repeat V(s) ← R(s) + γ max_a Σ_s' P(s'|s,a) V(s') for every s. Each sweep propagates information one cell further, like a wave leaving the base. The sequence converges to V* (the Bellman operator is a contraction), and the greedy policy on V* is optimal."],
+      ["Risk, cost of living and horizon", "Three knobs change the optimal policy: the slip probability (how risky it is to pass near the pit), the reward per step (how expensive it is to take long) and γ (how far the agent looks). A very negative per-step cost makes the rover risk the short path; high slip makes it prefer the long path hugging the wall."]
+    ],
+    tasks: { w1: { t: "Run value iteration until convergence (Δ < 0.001).", h: "Each sweep changes less than the previous one. The 'Until convergence' button repeats sweeps while Δ is large." },
+             w2: { t: "With slip 0.20 and reward per step −0.04, converge and observe that at cell (2,3), below the pit, the greedy action is ← (go around).", h: "Going up from (2,3) lands in the pit 80% of the time. Going left keeps you away from it even when slipping." },
+             w3: { t: "Keep slip at 0.20 and make the reward per step so negative that, at (2,3), going straight up becomes the greedy action.", h: "When every step hurts a lot, the long way costs more than the risk. Try values below −0.4." },
+             w4: { t: "No slip, γ = 1.00 and reward −0.04: converge and confirm that V(start) = 0.80.", h: "From the start to the base there are 5 non-terminal cells: 5 × (−0.04) + 1 = 0.80." } }
+  },
+  rl03: { name: "Model-free policy evaluation", about: "Monte Carlo and temporal difference." },
+  rl04: { name: "Model-free control", about: "Q-learning, SARSA and value-function approximation." },
+  rl05: { name: "Policy gradients I", about: "REINFORCE and the policy gradient theorem." },
+  rl06: { name: "Policy gradients II", about: "Variance, trust regions and PPO." },
+  rl07: { name: "PPO, GAE and imitation", about: "Advantage estimation and learning from demonstrations." },
+  rl08: { name: "Imitation, reward learning and RLHF", about: "Learning the reward function from humans." },
+  rl09: { name: "Bandits and regret", about: "Exploration vs. exploitation, UCB and regret." },
+  rl10: { name: "Fast learning II", about: "Efficient exploration and sample bounds." },
+  rl11: { name: "Bayesian bandits", about: "Thompson sampling and beliefs about rewards." },
+  rl12: { name: "Fast learning in MDPs", about: "Optimism, exploration bonuses and sample efficiency." },
+  rl13: { name: "MCTS and the AlphaZero family", about: "Monte Carlo tree search guided by a network." },
+  rl14: { name: "MCTS II: AlphaZero", about: "Self-play, policy and value in a single network." }
+}
+};
+
+/* IAWise - motor do jogo (derivado do DevWise, simplificado para fases com simulador) */
+const LS = Object.fromEntries(LESSONS.map(l => [l.id, l]));
+const ITEMS = []; for (const sim in TASKS) for (const t of TASKS[sim]) ITEMS.push({ ...t, sim, skill: LESSONS.find(l => l.sim === sim).id });
+const IT = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const KEY = "iawise-v1", L0 = 0.15, UNLOCK = 0.6;
+const URL_PILOT = (() => { try { const p = new URLSearchParams(location.search).get("piloto"); return p && KT.PILOTS.includes(p) ? p : null; } catch (e) { return null; } })();
+const pilot = () => URL_PILOT || "elo";
+const master = () => KT.master(pilot());
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
+let S, view = "home", cur = null, tab = "story", sim = null, sel = null, resetArmed = false, showJson = false, setMsg = "", msgs = [], hintOn = {}, lensOn = null;
+
+/* ---------- Estado ---------- */
+function guessLang() { const n = (navigator.language || "pt").slice(0, 2).toLowerCase(); return LANG[n] ? n : "pt"; }
+function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L0, n: 0, c: 0 });
+  return { v: 1, started: false, lang: guessLang(), skills, done: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0 }, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
+function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+const trk = id => KT.ensure(S.skills[id]);
+
+/* ---------- i18n ---------- */
+const Lg = () => LANG[S.lang] || LANG.pt;
+function t(k, vars) { let s = Lg().ui[k]; if (s == null) s = LANG.pt.ui[k]; if (s == null) return k; if (vars && typeof s === "string") for (const v in vars) s = s.split("{" + v + "}").join(String(vars[v])); return s; }
+const lsT = id => Lg().lessons[id] || LANG.pt.lessons[id];
+const wT = id => Lg().worlds[id] || LANG.pt.worlds[id];
+const gt = () => Lg().game || LANG.pt.game;
+const simT = (simId, k) => ((Lg().sims || {})[simId] || {})[k] || (LANG.pt.sims[simId] || {})[k] || k;
+const pct = x => Math.round(x * 100) + "%";
+
+/* ---------- Motor adaptativo ---------- */
+const mastered = id => trk(id).L >= master();
+const confirmed = id => !S.confirm || (trk(id).days || []).length >= 2;
+const awaitsConfirm = id => mastered(id) && !confirmed(id);
+const preOk = id => LS[id].pre.every(p => trk(p).L >= UNLOCK);
+const gateOk = id => S.xpTotal >= (LS[id].gate || 0) || !!S.opened[id];
+const unlocked = id => preOk(id) && gateOk(id);
+const built = id => !!LS[id].sim;
+function earn(x) { S.xp += x; S.xpTotal += x; }
+const roleIdx = () => { let i = 0; ROLE_XP.forEach((x, k) => { if (S.xpTotal >= x) i = k; }); return i; };
+const roleName = () => t("roles")[roleIdx()];
+
+function answer(item, ok, usedHint) {
+  const tr = trk(item.skill), c = GUESS, was = { L: tr.L, m: mastered(item.skill), r: roleIdx() }, preds = KT.predictAll(tr, item, c);
+  const unlockedBefore = LESSONS.filter(l => unlocked(l.id)).map(l => l.id);
+  KT.updateAll(tr, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++;
+  if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  msgs = [];
+  const m = MODES[S.mode];
+  if (ok) {
+    let xp = Math.round(TASK_XP[item.d] * m.mult * (usedHint && HINT_HALF ? .5 : 1));
+    if (S.boost > 0) { xp *= 2; S.boost--; }
+    S.streak++; S.best = Math.max(S.best, S.streak);
+    if (S.lastWrong) { xp += COMEBACK; msgs.push(t("comeback", { x: COMEBACK })); }
+    if (S.streak > 0 && S.streak % 3 === 0) { xp += 5; msgs.push(t("streakMsg", { n: S.streak })); }
+    earn(xp); S.done[item.id] = (S.done[item.id] || 0) + 1; S.lastWrong = false;
+    msgs.unshift(t("taskOk", { x: xp }));
+    if (!was.m && mastered(item.skill)) msgs.push(t("masteredNow", { s: lsT(item.skill).name }));
+    LESSONS.filter(l => unlocked(l.id) && !unlockedBefore.includes(l.id)).forEach(l => msgs.push(t("unlockedNow", { s: lsT(l.id).name })));
+    if (roleIdx() > was.r) msgs.push(t("promo", { r: roleName() }));
+  } else {
+    S.streak = 0; S.lastWrong = true;
+    const pen = m.pen * item.d;
+    if (S.inv.shield > 0) { S.inv.shield--; msgs.push(t("shieldUsed")); } else { S.xp = Math.max(0, S.xp - pen); msgs.push(t("lost", { x: pen })); }
+    msgs.unshift(t("taskFail"));
+  }
+  save();
+}
+
+/* ---------- Render ---------- */
+const $ = document.getElementById("app");
+const el = (tag, attrs = {}, ...kids) => H(tag, attrs, ...kids);
+function go(v, id) { view = v; if (id) { cur = id; tab = "story"; } if (v !== "lesson" && sim) { sim.destroy(); sim = null; } hintOn = {}; lensOn = null; msgs = []; render(); window.scrollTo(0, 0); }
+function render() {
+  document.documentElement.setAttribute("data-theme", S.theme === "auto" ? "" : S.theme); document.documentElement.lang = S.lang === "pt" ? "pt-BR" : "en";
+  $.innerHTML = ""; $.append(topbar());
+  const body = { home, map, lesson, shop, report, settings }[view] || home; $.append(body());
+}
+function topbar() {
+  const title = S.title ? " · " + gt().shop[S.title][0] : "";
+  return el("header", { class: "top" }, el("button", { class: "brand", onclick: () => go("home") }, "IAWise"),
+    el("div", { class: "stats" }, el("span", {}, t("role") + ": ", el("b", {}, roleName() + title)), el("span", {}, t("balance") + ": ", el("b", {}, S.xp + " XP")), el("span", {}, t("total") + ": ", el("b", {}, S.xpTotal)), el("span", {}, t("streak") + ": ", el("b", {}, S.streak))),
+    el("nav", { class: "nav" }, ...[["home", "navHome"], ["map", "navMap"], ["shop", "navShop"], ["report", "navReport"], ["settings", "navSettings"]].map(([v, k]) => el("button", { onclick: () => go(v), ...(view === v || (v === "map" && view === "lesson") ? { "aria-current": "page" } : {}) }, t(k)))));
+}
+
+/* --- início --- */
+function home() {
+  const builtN = LESSONS.filter(l => l.sim).length, tasksN = ITEMS.length, mst = LESSONS.filter(l => mastered(l.id)).length;
+  return el("section", { class: "home" },
+    el("div", {}, el("h1", {}, t("homeH")), el("p", { class: "lead" }, t("homeLead")),
+      el("div", { class: "qs" }, ...WORLDS.map(w => el("div", { class: "q " + w.id }, el("span", {}, w.icon), el("div", {}, el("b", {}, wT(w.id).name), el("br"), wT(w.id).question)))),
+      el("div", { class: "row" }, el("button", { class: "btn", onclick: () => { S.started = true; save(); go("map"); } }, S.started ? t("cont") : t("start"))),
+      el("div", { class: "kpis" }, kpi(builtN + "/" + LESSONS.length, t("kPhases")), kpi(tasksN, t("kTasks")), kpi(mst, t("kMastered")))),
+    el("div", {}, el("ol", { class: "loop" }, ...t("steps").map(([a, b]) => el("li", {}, el("div", {}, el("strong", {}, a), b)))), el("p", { class: "empty" }, t("homeSrc") + " " + t("homeI18n"))));
+}
+const kpi = (v, l) => el("div", { class: "kpi" }, el("b", {}, v), el("span", {}, l));
+
+/* --- mapa --- */
+function status(id) { if (!unlocked(id)) return ["stL", "locked"]; if (mastered(id) && confirmed(id)) return ["stM", "ok"]; if (awaitsConfirm(id)) return ["stC", "warn"]; if (trk(id).n > 0) return ["stP", "prog"]; return ["stB", ""]; }
+function map() {
+  const wrap = el("section", {});
+  for (const w of WORLDS) {
+    const panel = el("div", { class: "panel world " + w.id }, el("div", { class: "whead" }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h2", {}, wT(w.id).name), el("p", { class: "empty" }, wT(w.id).question))));
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("viewBox", "0 0 640 360"); svg.setAttribute("class", "mapsvg");
+    const ls = LESSONS.filter(l => l.world === w.id);
+    for (const l of ls) for (const p of l.pre) { const a = LS[p], ln = document.createElementNS(svg.namespaceURI, "line"); ln.setAttribute("x1", a.x); ln.setAttribute("y1", a.y); ln.setAttribute("x2", l.x); ln.setAttribute("y2", l.y); ln.setAttribute("class", "edge" + (trk(p).L >= UNLOCK ? " on" : "")); svg.append(ln); }
+    for (const l of ls) { const g = document.createElementNS(svg.namespaceURI, "g"); const [st, cls] = status(l.id); g.setAttribute("class", "node " + cls + (built(l.id) ? "" : " soon") + (sel === l.id ? " sel" : "")); g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
+      const c = document.createElementNS(svg.namespaceURI, "circle"); c.setAttribute("cx", l.x); c.setAttribute("cy", l.y); c.setAttribute("r", 26); g.append(c);
+      const tx = document.createElementNS(svg.namespaceURI, "text"); tx.setAttribute("x", l.x); tx.setAttribute("y", l.y + 5); tx.setAttribute("text-anchor", "middle"); tx.setAttribute("class", "pct"); tx.textContent = unlocked(l.id) ? pct(trk(l.id).L) : "🔒"; g.append(tx);
+      wrapText(l.n + ". " + lsT(l.id).name, 17).forEach((ln, i) => { const lb = document.createElementNS(svg.namespaceURI, "text"); lb.setAttribute("x", l.x); lb.setAttribute("y", l.y + 44 + i * 13); lb.setAttribute("text-anchor", "middle"); lb.setAttribute("class", "lbl"); lb.textContent = ln; g.append(lb); });
+      const open = () => { sel = l.id; render(); }; g.addEventListener("click", open); g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } }); svg.append(g); }
+    panel.append(el("div", { class: "mapwrap" }, svg));
+    if (sel && LS[sel].world === w.id) panel.append(lessonCard(sel));
+    wrap.append(panel);
+  }
+  wrap.append(el("p", { class: "empty" }, t("mapHint")));
+  return wrap;
+}
+function wrapText(s, n) { const out = []; let cur = ""; for (const w of s.split(" ")) { if ((cur + " " + w).trim().length > n && cur) { out.push(cur); cur = w; } else cur = (cur + " " + w).trim(); } if (cur) out.push(cur); if (out.length > 2) { out.length = 2; out[1] = out[1].slice(0, n - 1) + "…"; } return out; }
+function lessonCard(id) {
+  const l = LS[id], L = lsT(id), [st] = status(id), tr = trk(id), tasks = l.sim ? TASKS[l.sim] : [], done = tasks.filter(x => S.done[x.id]).length;
+  const card = el("div", { class: "skillinfo" }, el("h4", {}, t("lesson") + " " + l.n + " · " + L.name), el("p", {}, L.about), el("div", { class: "meta" }, el("span", { class: "tag " + l.world }, t(st)), el("span", { class: "tag plain" }, t("colMastery") + " " + pct(tr.L)), l.sim ? el("span", { class: "tag plain" }, done + "/" + tasks.length + " " + t("tasksH").toLowerCase()) : el("span", { class: "tag plain" }, t("soon"))));
+  if (!unlocked(id)) { const pre = l.pre.filter(p => trk(p).L < UNLOCK).map(p => lsT(p).name).join(t("and")); card.append(el("p", { class: "empty" }, pre && !gateOk(id) ? t("lockedXp", { p: pre, x: l.gate, y: S.xpTotal }) : pre ? t("locked", { p: pre }) : t("lockedXpOnly", { x: l.gate, y: S.xpTotal }))); }
+  else if (!built(id)) card.append(el("p", { class: "empty" }, t("soonP")));
+  else card.append(el("button", { class: "btn", onclick: () => { S.opened[id] = true; save(); go("lesson", id); } }, t("open")));
+  return card;
+}
+
+/* --- fase --- */
+function lesson() {
+  const l = LS[cur], L = lsT(cur), w = l.world;
+  const head = el("div", { class: "lhead " + w }, el("button", { class: "btn ghost small", onclick: () => go("map") }, "← " + t("back")), el("span", { class: "tag " + w }, WORLDS.find(x => x.id === w).icon + " " + wT(w).name + " · " + t("lesson") + " " + l.n), el("h2", {}, L.name), el("p", { class: "empty" }, L.about));
+  const tabs = el("div", { class: "tabs", role: "tablist" }, ...[["story", "tabStory"], ["theory", "tabTheory"], ["sim", "tabSim"]].map(([k, lab]) => el("button", { role: "tab", "aria-selected": tab === k, onclick: () => { tab = k; if (k !== "sim" && sim) { sim.destroy(); sim = null; } render(); } }, t(lab))));
+  const body = el("div", { class: "work" });
+  if (tab === "story") body.append(el("div", { class: "panel" }, el("p", { class: "client" }, t("client") + ": " + L.client), el("h3", {}, L.title), el("p", { class: "story" }, L.story), el("button", { class: "btn", onclick: () => { tab = "theory"; render(); } }, t("tabTheory") + " →")));
+  else if (tab === "theory") body.append(el("div", { class: "panel" }, ...L.theory.map(([h, p]) => el("div", { class: "concept" }, el("h3", {}, h), el("p", {}, p))), el("button", { class: "btn", onclick: () => { tab = "sim"; render(); } }, t("goSim"))));
+  else body.append(simView(l));
+  return el("section", {}, head, tabs, body);
+}
+function simView(l) {
+  const box = el("div", { class: "simbox" }), simEl = el("div", { class: "simarea" }), taskEl = el("div", { class: "tasks" });
+  box.append(simEl, taskEl);
+  const api = { s: k => simT(l.sim, k), refreshTasks: () => paintTasks(l, taskEl) };
+  if (!sim || sim.id !== l.sim) { if (sim) sim.destroy(); sim = SIMS[l.sim].mount(simEl, api); sim.id = l.sim; sim.el = simEl; } else simEl.replaceWith(sim.el);
+  paintTasks(l, taskEl);
+  return box;
+}
+function paintTasks(l, taskEl) {
+  const L = lsT(l.id), tasks = TASKS[l.sim], m = MODES[S.mode];
+  taskEl.innerHTML = ""; taskEl.append(el("h3", {}, t("tasksH")));
+  if (msgs.length) { const ok = S.log.length && S.log[S.log.length - 1].ok; taskEl.append(el("div", { class: "feedback " + (ok ? "ok" : "bad") }, el("b", {}, (ok ? t("cheers") : t("oops"))[Math.floor(Math.random() * 4)]), el("br"), msgs.join(" "))); }
+  for (const tk of tasks) {
+    const done = !!S.done[tk.id], tx = L.tasks[tk.id];
+    const row = el("div", { class: "task" + (done ? " done" : "") }, el("div", { class: "tmeta" }, el("span", { class: "pts" }, "★".repeat(tk.d)), done ? el("span", { class: "chip" }, "✓ " + t("verified")) : null), el("p", {}, tx.t));
+    if (!done) {
+      const acts = el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => { const ok = !!(sim && sim.check(tk.id)); answer(IT[tk.id], ok, !!hintOn[tk.id]); paintTasks(l, taskEl); const tb = $.querySelector(".top"); if (tb) tb.replaceWith(topbar()); if (ok) confetti(); } }, t("verify")));
+      if (m.hint) { if (hintOn[tk.id]) row.append(el("p", { class: "hint" }, "💡 " + tx.h)); else acts.append(el("button", { class: "btn small ghost", onclick: () => { hintOn[tk.id] = true; paintTasks(l, taskEl); } }, t("hint"))); }
+      else acts.append(el("span", { class: "empty" }, t("noHints")));
+      if (S.inv.lens > 0 && !hintOn[tk.id] && lensOn !== tk.id) acts.append(el("button", { class: "btn small ghost", onclick: () => { S.inv.lens--; hintOn[tk.id] = true; lensOn = tk.id; save(); paintTasks(l, taskEl); } }, "🔍 " + gt().shop.lens[0] + " (" + S.inv.lens + ")"));
+      row.append(acts);
+    }
+    taskEl.append(row);
+  }
+  if (tasks.every(tk => S.done[tk.id])) taskEl.append(el("p", { class: "feedback ok" }, t("allDone")));
+  if (S.boost > 0) taskEl.append(el("p", { class: "empty" }, t("boostOn", { n: S.boost })));
+}
+function confetti() { const c = el("div", { class: "confetti" }); for (let i = 0; i < 24; i++) { const p = el("i", { style: "left:" + Math.random() * 100 + "%;animation-delay:" + Math.random() * .4 + "s;background:" + ["#F0B73F", "#4CC98F", "#45BDB6", "#A296F5"][i % 4] }); c.append(p); } document.body.append(c); setTimeout(() => c.remove(), 1800); }
+
+/* --- loja --- */
+function shop() {
+  const sec = el("section", { class: "work" }, el("h2", {}, t("shopH")), el("p", {}, t("shopP")));
+  const modes = el("div", { class: "panel" }, el("h3", {}, t("modeH")), el("div", { class: "modes" }, ...Object.keys(MODES).map(k => el("button", { class: "mode" + (S.mode === k ? " on" : ""), onclick: () => { S.mode = k; save(); render(); } }, el("b", {}, MODE_ICON[k] + " " + t("modes")[k]), el("span", {}, t("modeDesc")[k])))));
+  const powers = el("div", { class: "panel" }, el("h3", {}, t("powers")), ...SHOP.filter(x => x.kind === "power").map(item));
+  const titles = el("div", { class: "panel" }, el("h3", {}, t("titlesH")), ...SHOP.filter(x => x.kind === "title").map(item));
+  sec.append(modes, powers, titles); return sec;
+  function item(x) { const [n, d] = gt().shop[x.id], own = x.kind === "title" ? S.titles.includes(x.id) : S.inv[x.id] || 0;
+    const row = el("div", { class: "shopitem" }, el("span", { class: "sicon" }, x.icon), el("div", {}, el("b", {}, n), el("p", {}, d), x.kind === "power" ? el("span", { class: "empty" }, t("owned", { n: own })) : null));
+    if (x.kind === "title" && own) row.append(S.title === x.id ? el("button", { class: "btn small ghost", onclick: () => { S.title = null; save(); render(); } }, t("unequip")) : el("button", { class: "btn small", onclick: () => { S.title = x.id; save(); render(); } }, t("equip")));
+    else { const b = el("button", { class: "btn small", onclick: () => { if (S.xp < x.cost) return; S.xp -= x.cost; if (x.kind === "title") { S.titles.push(x.id); S.title = x.id; } else if (x.id === "boost") S.boost += 3; else S.inv[x.id]++; save(); render(); } }, S.xp < x.cost ? t("need", { n: x.cost - S.xp, c: x.cost }) : t("buy", { c: x.cost })); if (S.xp < x.cost) b.disabled = true; row.append(b); }
+    return row; }
+}
+
+/* --- relatório --- */
+function report() {
+  const n = S.log.length, hits = S.log.filter(x => x.ok).length, mst = LESSONS.filter(l => mastered(l.id) && confirmed(l.id)).length;
+  const sec = el("section", { class: "work rep" }, el("h2", {}, t("repH")), el("p", { class: "empty" }, t("repSub")), S.name ? el("p", {}, el("b", {}, t("repFor", { n: S.name }))) : null,
+    el("div", { class: "kpis" }, kpi(n, t("k1")), kpi(n ? pct(hits / n) : "–", t("k2")), kpi(mst, t("k3")), kpi(S.best, t("k4"))));
+  const tb = el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTries", "colHits", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...LESSONS.filter(l => built(l.id)).map(l => { const tr = trk(l.id), [st] = status(l.id); return el("tr", {}, el("td", {}, WORLDS.find(w => w.id === l.world).icon + " " + l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)), el("td", {}, tr.n), el("td", {}, tr.c), el("td", {}, t(st))); })));
+  sec.append(el("div", { class: "panel" }, el("h3", {}, t("bySkill")), tb));
+  const recs = el("div", { class: "panel" }, el("h3", {}, t("recs")));
+  if (!n) recs.append(el("p", { class: "empty" }, t("recNone")));
+  else { const cand = LESSONS.filter(l => built(l.id) && unlocked(l.id) && !mastered(l.id)).sort((a, b) => trk(a.id).L - trk(b.id).L)[0]; if (cand) recs.append(el("p", {}, t("recPriority", { s: lsT(cand.id).name, p: pct(trk(cand.id).L), c: trk(cand.id).c, n: trk(cand.id).n })));
+    const lk = LESSONS.filter(l => built(l.id) && !unlocked(l.id)).map(l => lsT(l.id).name); if (lk.length) recs.append(el("p", { class: "empty" }, t("recLocked", { s: lk.join(", ") }))); }
+  sec.append(recs);
+  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP")), el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...KT.IDS.map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); }))));
+  sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }))));
+  const data = el("div", { class: "panel noprint" }, el("h3", {}, t("dataH")), el("p", { class: "empty" }, t("dataP")), el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => window.print() }, "🖨 " + t("printBtn")), el("button", { class: "btn small ghost", onclick: () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.log, null, 1)], { type: "application/json" })); a.download = "iawise-log.json"; a.click(); } }, t("download")), el("button", { class: "btn small ghost", onclick: () => { showJson = !showJson; render(); } }, showJson ? t("hideJson") : t("showJson"))), showJson ? el("pre", { class: "json" }, JSON.stringify(S.log.slice(-40), null, 1)) : null);
+  sec.append(data, el("p", { class: "empty printonly" }, t("printedOn", { d: new Date().toLocaleDateString() })));
+  return sec;
+}
+
+/* --- ajustes --- */
+function settings() {
+  const sec = el("section", { class: "work" }, el("h2", {}, t("setH")));
+  const p = el("div", { class: "panel" },
+    el("label", { class: "ctl" }, el("span", {}, t("uiLang")), el("select", { onchange: e => { S.lang = e.target.value; save(); render(); } }, ...Object.keys(LANG).map(k => el("option", { value: k, ...(S.lang === k ? { selected: "" } : {}) }, LANG[k].name)))),
+    el("label", { class: "ctl" }, el("span", {}, t("theme")), el("select", { onchange: e => { S.theme = e.target.value; save(); render(); } }, ...[["auto", "themeAuto"], ["light", "themeLight"], ["dark", "themeDark"]].map(([v, k]) => el("option", { value: v, ...(S.theme === v ? { selected: "" } : {}) }, t(k))))),
+    el("label", { class: "ctl" }, el("span", {}, t("studentName")), el("input", { type: "text", value: S.name, oninput: e => { S.name = e.target.value; save(); } })),
+    el("label", { class: "ctl chk" }, el("input", { type: "checkbox", ...(S.confirm ? { checked: "" } : {}), onchange: e => { S.confirm = e.target.checked; save(); render(); } }), el("span", {}, t("confirmRule"))),
+    el("div", { class: "row" }, el("button", { class: "btn small ghost danger", onclick: () => { if (!resetArmed) { resetArmed = true; render(); return; } localStorage.removeItem(KEY); S = fresh(); resetArmed = false; go("home"); } }, resetArmed ? t("resetConfirm") : t("reset"))));
+  sec.append(p); return sec;
+}
+
+/* ---------- boot ---------- */
+S = load(); render();
+
+</script>
+</body>
+</html>

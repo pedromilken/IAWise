@@ -1,0 +1,214 @@
+/* IAWise - motor do jogo (derivado do DevWise, simplificado para fases com simulador) */
+const LS = Object.fromEntries(LESSONS.map(l => [l.id, l]));
+const ITEMS = []; for (const sim in TASKS) for (const t of TASKS[sim]) ITEMS.push({ ...t, sim, skill: LESSONS.find(l => l.sim === sim).id });
+const IT = Object.fromEntries(ITEMS.map(i => [i.id, i]));
+const KEY = "iawise-v1", L0 = 0.15, UNLOCK = 0.6;
+const URL_PILOT = (() => { try { const p = new URLSearchParams(location.search).get("piloto"); return p && KT.PILOTS.includes(p) ? p : null; } catch (e) { return null; } })();
+const pilot = () => URL_PILOT || "elo";
+const master = () => KT.master(pilot());
+const today = () => { const d = new Date(); return d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate(); };
+let S, view = "home", cur = null, tab = "story", sim = null, sel = null, resetArmed = false, showJson = false, setMsg = "", msgs = [], hintOn = {}, lensOn = null;
+
+/* ---------- Estado ---------- */
+function guessLang() { const n = (navigator.language || "pt").slice(0, 2).toLowerCase(); return LANG[n] ? n : "pt"; }
+function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L0, n: 0, c: 0 });
+  return { v: 1, started: false, lang: guessLang(), skills, done: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0 }, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
+function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+const trk = id => KT.ensure(S.skills[id]);
+
+/* ---------- i18n ---------- */
+const Lg = () => LANG[S.lang] || LANG.pt;
+function t(k, vars) { let s = Lg().ui[k]; if (s == null) s = LANG.pt.ui[k]; if (s == null) return k; if (vars && typeof s === "string") for (const v in vars) s = s.split("{" + v + "}").join(String(vars[v])); return s; }
+const lsT = id => Lg().lessons[id] || LANG.pt.lessons[id];
+const wT = id => Lg().worlds[id] || LANG.pt.worlds[id];
+const gt = () => Lg().game || LANG.pt.game;
+const simT = (simId, k) => ((Lg().sims || {})[simId] || {})[k] || (LANG.pt.sims[simId] || {})[k] || k;
+const pct = x => Math.round(x * 100) + "%";
+
+/* ---------- Motor adaptativo ---------- */
+const mastered = id => trk(id).L >= master();
+const confirmed = id => !S.confirm || (trk(id).days || []).length >= 2;
+const awaitsConfirm = id => mastered(id) && !confirmed(id);
+const preOk = id => LS[id].pre.every(p => trk(p).L >= UNLOCK);
+const gateOk = id => S.xpTotal >= (LS[id].gate || 0) || !!S.opened[id];
+const unlocked = id => preOk(id) && gateOk(id);
+const built = id => !!LS[id].sim;
+function earn(x) { S.xp += x; S.xpTotal += x; }
+const roleIdx = () => { let i = 0; ROLE_XP.forEach((x, k) => { if (S.xpTotal >= x) i = k; }); return i; };
+const roleName = () => t("roles")[roleIdx()];
+
+function answer(item, ok, usedHint) {
+  const tr = trk(item.skill), c = GUESS, was = { L: tr.L, m: mastered(item.skill), r: roleIdx() }, preds = KT.predictAll(tr, item, c);
+  const unlockedBefore = LESSONS.filter(l => unlocked(l.id)).map(l => l.id);
+  KT.updateAll(tr, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++;
+  if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  msgs = [];
+  const m = MODES[S.mode];
+  if (ok) {
+    let xp = Math.round(TASK_XP[item.d] * m.mult * (usedHint && HINT_HALF ? .5 : 1));
+    if (S.boost > 0) { xp *= 2; S.boost--; }
+    S.streak++; S.best = Math.max(S.best, S.streak);
+    if (S.lastWrong) { xp += COMEBACK; msgs.push(t("comeback", { x: COMEBACK })); }
+    if (S.streak > 0 && S.streak % 3 === 0) { xp += 5; msgs.push(t("streakMsg", { n: S.streak })); }
+    earn(xp); S.done[item.id] = (S.done[item.id] || 0) + 1; S.lastWrong = false;
+    msgs.unshift(t("taskOk", { x: xp }));
+    if (!was.m && mastered(item.skill)) msgs.push(t("masteredNow", { s: lsT(item.skill).name }));
+    LESSONS.filter(l => unlocked(l.id) && !unlockedBefore.includes(l.id)).forEach(l => msgs.push(t("unlockedNow", { s: lsT(l.id).name })));
+    if (roleIdx() > was.r) msgs.push(t("promo", { r: roleName() }));
+  } else {
+    S.streak = 0; S.lastWrong = true;
+    const pen = m.pen * item.d;
+    if (S.inv.shield > 0) { S.inv.shield--; msgs.push(t("shieldUsed")); } else { S.xp = Math.max(0, S.xp - pen); msgs.push(t("lost", { x: pen })); }
+    msgs.unshift(t("taskFail"));
+  }
+  save();
+}
+
+/* ---------- Render ---------- */
+const $ = document.getElementById("app");
+const el = (tag, attrs = {}, ...kids) => H(tag, attrs, ...kids);
+function go(v, id) { view = v; if (id) { cur = id; tab = "story"; } if (v !== "lesson" && sim) { sim.destroy(); sim = null; } hintOn = {}; lensOn = null; msgs = []; render(); window.scrollTo(0, 0); }
+function render() {
+  document.documentElement.setAttribute("data-theme", S.theme === "auto" ? "" : S.theme); document.documentElement.lang = S.lang === "pt" ? "pt-BR" : "en";
+  $.innerHTML = ""; $.append(topbar());
+  const body = { home, map, lesson, shop, report, settings }[view] || home; $.append(body());
+}
+function topbar() {
+  const title = S.title ? " · " + gt().shop[S.title][0] : "";
+  return el("header", { class: "top" }, el("button", { class: "brand", onclick: () => go("home") }, "IAWise"),
+    el("div", { class: "stats" }, el("span", {}, t("role") + ": ", el("b", {}, roleName() + title)), el("span", {}, t("balance") + ": ", el("b", {}, S.xp + " XP")), el("span", {}, t("total") + ": ", el("b", {}, S.xpTotal)), el("span", {}, t("streak") + ": ", el("b", {}, S.streak))),
+    el("nav", { class: "nav" }, ...[["home", "navHome"], ["map", "navMap"], ["shop", "navShop"], ["report", "navReport"], ["settings", "navSettings"]].map(([v, k]) => el("button", { onclick: () => go(v), ...(view === v || (v === "map" && view === "lesson") ? { "aria-current": "page" } : {}) }, t(k)))));
+}
+
+/* --- início --- */
+function home() {
+  const builtN = LESSONS.filter(l => l.sim).length, tasksN = ITEMS.length, mst = LESSONS.filter(l => mastered(l.id)).length;
+  return el("section", { class: "home" },
+    el("div", {}, el("h1", {}, t("homeH")), el("p", { class: "lead" }, t("homeLead")),
+      el("div", { class: "qs" }, ...WORLDS.map(w => el("div", { class: "q " + w.id }, el("span", {}, w.icon), el("div", {}, el("b", {}, wT(w.id).name), el("br"), wT(w.id).question)))),
+      el("div", { class: "row" }, el("button", { class: "btn", onclick: () => { S.started = true; save(); go("map"); } }, S.started ? t("cont") : t("start"))),
+      el("div", { class: "kpis" }, kpi(builtN + "/" + LESSONS.length, t("kPhases")), kpi(tasksN, t("kTasks")), kpi(mst, t("kMastered")))),
+    el("div", {}, el("ol", { class: "loop" }, ...t("steps").map(([a, b]) => el("li", {}, el("div", {}, el("strong", {}, a), b)))), el("p", { class: "empty" }, t("homeSrc") + " " + t("homeI18n"))));
+}
+const kpi = (v, l) => el("div", { class: "kpi" }, el("b", {}, v), el("span", {}, l));
+
+/* --- mapa --- */
+function status(id) { if (!unlocked(id)) return ["stL", "locked"]; if (mastered(id) && confirmed(id)) return ["stM", "ok"]; if (awaitsConfirm(id)) return ["stC", "warn"]; if (trk(id).n > 0) return ["stP", "prog"]; return ["stB", ""]; }
+function map() {
+  const wrap = el("section", {});
+  for (const w of WORLDS) {
+    const panel = el("div", { class: "panel world " + w.id }, el("div", { class: "whead" }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h2", {}, wT(w.id).name), el("p", { class: "empty" }, wT(w.id).question))));
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg"); svg.setAttribute("viewBox", "0 0 640 360"); svg.setAttribute("class", "mapsvg");
+    const ls = LESSONS.filter(l => l.world === w.id);
+    for (const l of ls) for (const p of l.pre) { const a = LS[p], ln = document.createElementNS(svg.namespaceURI, "line"); ln.setAttribute("x1", a.x); ln.setAttribute("y1", a.y); ln.setAttribute("x2", l.x); ln.setAttribute("y2", l.y); ln.setAttribute("class", "edge" + (trk(p).L >= UNLOCK ? " on" : "")); svg.append(ln); }
+    for (const l of ls) { const g = document.createElementNS(svg.namespaceURI, "g"); const [st, cls] = status(l.id); g.setAttribute("class", "node " + cls + (built(l.id) ? "" : " soon") + (sel === l.id ? " sel" : "")); g.setAttribute("tabindex", "0"); g.setAttribute("role", "button");
+      const c = document.createElementNS(svg.namespaceURI, "circle"); c.setAttribute("cx", l.x); c.setAttribute("cy", l.y); c.setAttribute("r", 26); g.append(c);
+      const tx = document.createElementNS(svg.namespaceURI, "text"); tx.setAttribute("x", l.x); tx.setAttribute("y", l.y + 5); tx.setAttribute("text-anchor", "middle"); tx.setAttribute("class", "pct"); tx.textContent = unlocked(l.id) ? pct(trk(l.id).L) : "🔒"; g.append(tx);
+      wrapText(l.n + ". " + lsT(l.id).name, 17).forEach((ln, i) => { const lb = document.createElementNS(svg.namespaceURI, "text"); lb.setAttribute("x", l.x); lb.setAttribute("y", l.y + 44 + i * 13); lb.setAttribute("text-anchor", "middle"); lb.setAttribute("class", "lbl"); lb.textContent = ln; g.append(lb); });
+      const open = () => { sel = l.id; render(); }; g.addEventListener("click", open); g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } }); svg.append(g); }
+    panel.append(el("div", { class: "mapwrap" }, svg));
+    if (sel && LS[sel].world === w.id) panel.append(lessonCard(sel));
+    wrap.append(panel);
+  }
+  wrap.append(el("p", { class: "empty" }, t("mapHint")));
+  return wrap;
+}
+function wrapText(s, n) { const out = []; let cur = ""; for (const w of s.split(" ")) { if ((cur + " " + w).trim().length > n && cur) { out.push(cur); cur = w; } else cur = (cur + " " + w).trim(); } if (cur) out.push(cur); if (out.length > 2) { out.length = 2; out[1] = out[1].slice(0, n - 1) + "…"; } return out; }
+function lessonCard(id) {
+  const l = LS[id], L = lsT(id), [st] = status(id), tr = trk(id), tasks = l.sim ? TASKS[l.sim] : [], done = tasks.filter(x => S.done[x.id]).length;
+  const card = el("div", { class: "skillinfo" }, el("h4", {}, t("lesson") + " " + l.n + " · " + L.name), el("p", {}, L.about), el("div", { class: "meta" }, el("span", { class: "tag " + l.world }, t(st)), el("span", { class: "tag plain" }, t("colMastery") + " " + pct(tr.L)), l.sim ? el("span", { class: "tag plain" }, done + "/" + tasks.length + " " + t("tasksH").toLowerCase()) : el("span", { class: "tag plain" }, t("soon"))));
+  if (!unlocked(id)) { const pre = l.pre.filter(p => trk(p).L < UNLOCK).map(p => lsT(p).name).join(t("and")); card.append(el("p", { class: "empty" }, pre && !gateOk(id) ? t("lockedXp", { p: pre, x: l.gate, y: S.xpTotal }) : pre ? t("locked", { p: pre }) : t("lockedXpOnly", { x: l.gate, y: S.xpTotal }))); }
+  else if (!built(id)) card.append(el("p", { class: "empty" }, t("soonP")));
+  else card.append(el("button", { class: "btn", onclick: () => { S.opened[id] = true; save(); go("lesson", id); } }, t("open")));
+  return card;
+}
+
+/* --- fase --- */
+function lesson() {
+  const l = LS[cur], L = lsT(cur), w = l.world;
+  const head = el("div", { class: "lhead " + w }, el("button", { class: "btn ghost small", onclick: () => go("map") }, "← " + t("back")), el("span", { class: "tag " + w }, WORLDS.find(x => x.id === w).icon + " " + wT(w).name + " · " + t("lesson") + " " + l.n), el("h2", {}, L.name), el("p", { class: "empty" }, L.about));
+  const tabs = el("div", { class: "tabs", role: "tablist" }, ...[["story", "tabStory"], ["theory", "tabTheory"], ["sim", "tabSim"]].map(([k, lab]) => el("button", { role: "tab", "aria-selected": tab === k, onclick: () => { tab = k; if (k !== "sim" && sim) { sim.destroy(); sim = null; } render(); } }, t(lab))));
+  const body = el("div", { class: "work" });
+  if (tab === "story") body.append(el("div", { class: "panel" }, el("p", { class: "client" }, t("client") + ": " + L.client), el("h3", {}, L.title), el("p", { class: "story" }, L.story), el("button", { class: "btn", onclick: () => { tab = "theory"; render(); } }, t("tabTheory") + " →")));
+  else if (tab === "theory") body.append(el("div", { class: "panel" }, ...L.theory.map(([h, p]) => el("div", { class: "concept" }, el("h3", {}, h), el("p", {}, p))), el("button", { class: "btn", onclick: () => { tab = "sim"; render(); } }, t("goSim"))));
+  else body.append(simView(l));
+  return el("section", {}, head, tabs, body);
+}
+function simView(l) {
+  const box = el("div", { class: "simbox" }), simEl = el("div", { class: "simarea" }), taskEl = el("div", { class: "tasks" });
+  box.append(simEl, taskEl);
+  const api = { s: k => simT(l.sim, k), refreshTasks: () => paintTasks(l, taskEl) };
+  if (!sim || sim.id !== l.sim) { if (sim) sim.destroy(); sim = SIMS[l.sim].mount(simEl, api); sim.id = l.sim; sim.el = simEl; } else simEl.replaceWith(sim.el);
+  paintTasks(l, taskEl);
+  return box;
+}
+function paintTasks(l, taskEl) {
+  const L = lsT(l.id), tasks = TASKS[l.sim], m = MODES[S.mode];
+  taskEl.innerHTML = ""; taskEl.append(el("h3", {}, t("tasksH")));
+  if (msgs.length) { const ok = S.log.length && S.log[S.log.length - 1].ok; taskEl.append(el("div", { class: "feedback " + (ok ? "ok" : "bad") }, el("b", {}, (ok ? t("cheers") : t("oops"))[Math.floor(Math.random() * 4)]), el("br"), msgs.join(" "))); }
+  for (const tk of tasks) {
+    const done = !!S.done[tk.id], tx = L.tasks[tk.id];
+    const row = el("div", { class: "task" + (done ? " done" : "") }, el("div", { class: "tmeta" }, el("span", { class: "pts" }, "★".repeat(tk.d)), done ? el("span", { class: "chip" }, "✓ " + t("verified")) : null), el("p", {}, tx.t));
+    if (!done) {
+      const acts = el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => { const ok = !!(sim && sim.check(tk.id)); answer(IT[tk.id], ok, !!hintOn[tk.id]); paintTasks(l, taskEl); const tb = $.querySelector(".top"); if (tb) tb.replaceWith(topbar()); if (ok) confetti(); } }, t("verify")));
+      if (m.hint) { if (hintOn[tk.id]) row.append(el("p", { class: "hint" }, "💡 " + tx.h)); else acts.append(el("button", { class: "btn small ghost", onclick: () => { hintOn[tk.id] = true; paintTasks(l, taskEl); } }, t("hint"))); }
+      else acts.append(el("span", { class: "empty" }, t("noHints")));
+      if (S.inv.lens > 0 && !hintOn[tk.id] && lensOn !== tk.id) acts.append(el("button", { class: "btn small ghost", onclick: () => { S.inv.lens--; hintOn[tk.id] = true; lensOn = tk.id; save(); paintTasks(l, taskEl); } }, "🔍 " + gt().shop.lens[0] + " (" + S.inv.lens + ")"));
+      row.append(acts);
+    }
+    taskEl.append(row);
+  }
+  if (tasks.every(tk => S.done[tk.id])) taskEl.append(el("p", { class: "feedback ok" }, t("allDone")));
+  if (S.boost > 0) taskEl.append(el("p", { class: "empty" }, t("boostOn", { n: S.boost })));
+}
+function confetti() { const c = el("div", { class: "confetti" }); for (let i = 0; i < 24; i++) { const p = el("i", { style: "left:" + Math.random() * 100 + "%;animation-delay:" + Math.random() * .4 + "s;background:" + ["#F0B73F", "#4CC98F", "#45BDB6", "#A296F5"][i % 4] }); c.append(p); } document.body.append(c); setTimeout(() => c.remove(), 1800); }
+
+/* --- loja --- */
+function shop() {
+  const sec = el("section", { class: "work" }, el("h2", {}, t("shopH")), el("p", {}, t("shopP")));
+  const modes = el("div", { class: "panel" }, el("h3", {}, t("modeH")), el("div", { class: "modes" }, ...Object.keys(MODES).map(k => el("button", { class: "mode" + (S.mode === k ? " on" : ""), onclick: () => { S.mode = k; save(); render(); } }, el("b", {}, MODE_ICON[k] + " " + t("modes")[k]), el("span", {}, t("modeDesc")[k])))));
+  const powers = el("div", { class: "panel" }, el("h3", {}, t("powers")), ...SHOP.filter(x => x.kind === "power").map(item));
+  const titles = el("div", { class: "panel" }, el("h3", {}, t("titlesH")), ...SHOP.filter(x => x.kind === "title").map(item));
+  sec.append(modes, powers, titles); return sec;
+  function item(x) { const [n, d] = gt().shop[x.id], own = x.kind === "title" ? S.titles.includes(x.id) : S.inv[x.id] || 0;
+    const row = el("div", { class: "shopitem" }, el("span", { class: "sicon" }, x.icon), el("div", {}, el("b", {}, n), el("p", {}, d), x.kind === "power" ? el("span", { class: "empty" }, t("owned", { n: own })) : null));
+    if (x.kind === "title" && own) row.append(S.title === x.id ? el("button", { class: "btn small ghost", onclick: () => { S.title = null; save(); render(); } }, t("unequip")) : el("button", { class: "btn small", onclick: () => { S.title = x.id; save(); render(); } }, t("equip")));
+    else { const b = el("button", { class: "btn small", onclick: () => { if (S.xp < x.cost) return; S.xp -= x.cost; if (x.kind === "title") { S.titles.push(x.id); S.title = x.id; } else if (x.id === "boost") S.boost += 3; else S.inv[x.id]++; save(); render(); } }, S.xp < x.cost ? t("need", { n: x.cost - S.xp, c: x.cost }) : t("buy", { c: x.cost })); if (S.xp < x.cost) b.disabled = true; row.append(b); }
+    return row; }
+}
+
+/* --- relatório --- */
+function report() {
+  const n = S.log.length, hits = S.log.filter(x => x.ok).length, mst = LESSONS.filter(l => mastered(l.id) && confirmed(l.id)).length;
+  const sec = el("section", { class: "work rep" }, el("h2", {}, t("repH")), el("p", { class: "empty" }, t("repSub")), S.name ? el("p", {}, el("b", {}, t("repFor", { n: S.name }))) : null,
+    el("div", { class: "kpis" }, kpi(n, t("k1")), kpi(n ? pct(hits / n) : "–", t("k2")), kpi(mst, t("k3")), kpi(S.best, t("k4"))));
+  const tb = el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTries", "colHits", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...LESSONS.filter(l => built(l.id)).map(l => { const tr = trk(l.id), [st] = status(l.id); return el("tr", {}, el("td", {}, WORLDS.find(w => w.id === l.world).icon + " " + l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)), el("td", {}, tr.n), el("td", {}, tr.c), el("td", {}, t(st))); })));
+  sec.append(el("div", { class: "panel" }, el("h3", {}, t("bySkill")), tb));
+  const recs = el("div", { class: "panel" }, el("h3", {}, t("recs")));
+  if (!n) recs.append(el("p", { class: "empty" }, t("recNone")));
+  else { const cand = LESSONS.filter(l => built(l.id) && unlocked(l.id) && !mastered(l.id)).sort((a, b) => trk(a.id).L - trk(b.id).L)[0]; if (cand) recs.append(el("p", {}, t("recPriority", { s: lsT(cand.id).name, p: pct(trk(cand.id).L), c: trk(cand.id).c, n: trk(cand.id).n })));
+    const lk = LESSONS.filter(l => built(l.id) && !unlocked(l.id)).map(l => lsT(l.id).name); if (lk.length) recs.append(el("p", { class: "empty" }, t("recLocked", { s: lk.join(", ") }))); }
+  sec.append(recs);
+  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP")), el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...KT.IDS.map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); }))));
+  sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }))));
+  const data = el("div", { class: "panel noprint" }, el("h3", {}, t("dataH")), el("p", { class: "empty" }, t("dataP")), el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => window.print() }, "🖨 " + t("printBtn")), el("button", { class: "btn small ghost", onclick: () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.log, null, 1)], { type: "application/json" })); a.download = "iawise-log.json"; a.click(); } }, t("download")), el("button", { class: "btn small ghost", onclick: () => { showJson = !showJson; render(); } }, showJson ? t("hideJson") : t("showJson"))), showJson ? el("pre", { class: "json" }, JSON.stringify(S.log.slice(-40), null, 1)) : null);
+  sec.append(data, el("p", { class: "empty printonly" }, t("printedOn", { d: new Date().toLocaleDateString() })));
+  return sec;
+}
+
+/* --- ajustes --- */
+function settings() {
+  const sec = el("section", { class: "work" }, el("h2", {}, t("setH")));
+  const p = el("div", { class: "panel" },
+    el("label", { class: "ctl" }, el("span", {}, t("uiLang")), el("select", { onchange: e => { S.lang = e.target.value; save(); render(); } }, ...Object.keys(LANG).map(k => el("option", { value: k, ...(S.lang === k ? { selected: "" } : {}) }, LANG[k].name)))),
+    el("label", { class: "ctl" }, el("span", {}, t("theme")), el("select", { onchange: e => { S.theme = e.target.value; save(); render(); } }, ...[["auto", "themeAuto"], ["light", "themeLight"], ["dark", "themeDark"]].map(([v, k]) => el("option", { value: v, ...(S.theme === v ? { selected: "" } : {}) }, t(k))))),
+    el("label", { class: "ctl" }, el("span", {}, t("studentName")), el("input", { type: "text", value: S.name, oninput: e => { S.name = e.target.value; save(); } })),
+    el("label", { class: "ctl chk" }, el("input", { type: "checkbox", ...(S.confirm ? { checked: "" } : {}), onchange: e => { S.confirm = e.target.checked; save(); render(); } }), el("span", {}, t("confirmRule"))),
+    el("div", { class: "row" }, el("button", { class: "btn small ghost danger", onclick: () => { if (!resetArmed) { resetArmed = true; render(); return; } localStorage.removeItem(KEY); S = fresh(); resetArmed = false; go("home"); } }, resetArmed ? t("resetConfirm") : t("reset"))));
+  sec.append(p); return sec;
+}
+
+/* ---------- boot ---------- */
+S = load(); render();

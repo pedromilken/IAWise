@@ -1,0 +1,185 @@
+LANG.pt = {
+name: "Português",
+ui: {
+  navHome: "Início", navMap: "Mapa", navShop: "Loja", navReport: "Relatório", navSettings: "Ajustes",
+  xp: "XP", balance: "Saldo", total: "XP acumulado", role: "Patente", streak: "Sequência",
+  roles: ["Aprendiz", "Assistente de laboratório", "Pesquisador(a)", "Cientista", "Oráculo"],
+  homeH: "Aprenda redes neurais e agentes inteligentes mexendo nas engrenagens",
+  homeLead: "Dois mundos, 28 fases, uma pergunta por mundo. Em cada fase você escuta uma história, monta o arsenal teórico e depois entra num simulador onde ajusta pesos, gradientes, políticas e recompensas com as próprias mãos. As tarefas do simulador são a prova de que você entendeu; um tutor de knowledge tracing acompanha o domínio de cada fase.",
+  homeQ1: "Como construir máquinas que aprendem a partir de dados?", homeQ2: "Como construir agentes que tomam boas decisões?",
+  start: "Começar pelo mapa", cont: "Continuar de onde parei",
+  steps: [["Escute a história", "Um problema real de gente real: a fábrica que precisa separar peças boas de ruins, o rover que precisa decidir para onde ir."],
+          ["Monte o arsenal", "Três conceitos essenciais explicados com analogias práticas, mais a notação que aparece nos slides do curso."],
+          ["Mexa no simulador", "Nada de decorar: você gira o botão do gradiente, vira a seta da política e vê o resultado na hora. Cada tarefa verificada vira XP e evidência de domínio."]],
+  homeSrc: "Conteúdo derivado das disciplinas GBC073 (Inteligência Computacional) e GBC063 (Inteligência Artificial), UFU/FACOM, material aberto (CC0) do Prof. Albertini.",
+  homeI18n: "Disponível em português e inglês.",
+  kPhases: "fases com simulador", kTasks: "tarefas verificáveis", kMastered: "fases dominadas",
+  mapHint: "Toque numa fase para ver detalhes. O número é a estimativa de domínio.",
+  locked: "Bloqueada: precisa de 60% em {p}.", lockedXp: "Bloqueada: precisa de 60% em {p} e {x} XP acumulado (você tem {y}).", lockedXpOnly: "Bloqueada: precisa de {x} XP acumulado (você tem {y}).",
+  soon: "Simulador em construção", soonP: "Esta fase já tem lugar no mapa. História, arsenal e simulador chegam nas próximas versões.",
+  open: "Entrar na fase", and: " e ",
+  stL: "Bloqueada", stP: "Em andamento", stM: "Dominada", stC: "A confirmar noutro dia", stB: "Liberada",
+  tabStory: "História", tabTheory: "Arsenal teórico", tabSim: "Simulador",
+  client: "Cenário", goSim: "Estou pronto: abrir o simulador", back: "Voltar ao mapa",
+  tasksH: "Tarefas do simulador", verify: "Verificar", verified: "Feita", hint: "Pedir dica", noHints: "Sem dicas neste modo.",
+  taskOk: "Tarefa verificada! +{x} XP", taskFail: "Ainda não. O simulador não está no estado pedido.", lost: "Penalidade: -{x} XP do saldo.",
+  shieldUsed: "Seu escudo absorveu a penalidade.", comeback: "Recuperação: +{x} XP por acertar logo depois de um erro.", streakMsg: "{n} seguidas! Bônus: +5 XP.",
+  boostOn: "XP em dobro: faltam {n} tarefas", masteredNow: "Fase dominada: {s}.", unlockedNow: "Nova fase liberada: {s}.", promo: "Promoção: sua patente agora é {r}.",
+  cheers: ["Mandou bem!", "Isso é entender por dentro!", "O simulador não mente: certíssimo!", "Fase avançando com estilo!"],
+  oops: ["Quase. Ajuste mais um pouco e verifique de novo.", "Errar aqui é barato: o simulador está aí para isso.", "Releia a tarefa: qual estado exatamente ela pede?", "Não foi dessa vez. A dica pode ajudar."],
+  allDone: "Todas as tarefas desta fase foram feitas. Continue explorando ou volte ao mapa.",
+  modeH: "Dificuldade", modes: { normal: "Normal", medio: "Médio", dificil: "Difícil", hardcore: "Extra hardcore" },
+  modeDesc: { normal: "XP ×1. Dicas grátis (com dica, o acerto vale metade). Cada verificação falha custa 2 XP por nível da tarefa.", medio: "XP ×1,5. Dicas grátis. Cada verificação falha custa 4 XP por nível.", dificil: "XP ×2. Sem dicas. Cada verificação falha custa 6 XP por nível.", hardcore: "XP ×3. Sem dicas. Cada verificação falha custa 10 XP por nível." },
+  shopH: "Loja", shopP: "Troque saldo de XP por poderes e títulos. Gastar saldo não reduz o XP acumulado, que é o que libera as fases.", powers: "Poderes", titlesH: "Títulos", buy: "Trocar por {c} XP", need: "Faltam {n} XP (custa {c})", owned: "Você tem: {n}", equip: "Usar este título", equipped: "Em uso", unequip: "Parar de usar",
+  repH: "Relatório de aprendizagem", repSub: "Para o estudante e para quem o acompanha: o que já está dominado, onde estão os erros e o que praticar depois.", repFor: "Estudante: {n}", printedOn: "Gerado em {d}",
+  k1: "tarefas verificadas", k2: "acerto", k3: "fases dominadas", k4: "maior sequência",
+  bySkill: "Domínio por fase", colSkill: "Fase", colMastery: "Domínio", colTries: "Verificações", colHits: "Acertos", colStatus: "Status",
+  recs: "Recomendações do tutor", recNone: "Ainda não há respostas. Verifique algumas tarefas para o tutor ter evidência.", recPriority: "Prioridade: {s} ({p} de domínio, {c} acertos em {n}).", recLocked: "Ainda bloqueadas: {s}. Abrem quando os pré-requisitos passarem de 60%.",
+  how: "Como o domínio é calculado", howP: "O tutor usa o modelo Elo/Rasch: cada fase tem uma pontuação de domínio e cada tarefa tem uma dificuldade na mesma escala. A distância entre elas dá a probabilidade de acerto; após cada verificação, a pontuação sobe ou desce proporcionalmente à surpresa. Uma fase conta como dominada a partir de {m}. Os modelos BKT, PFA, AFM e TRI 3PL rodam em segundo plano e só registram suas previsões para comparação.",
+  cmpH: "Comparação de modelos nesta trajetória", cmpP: "Antes de cada verificação, os cinco modelos registram a probabilidade de acerto que previam. Brier mede o erro da previsão (menor é melhor); AUC mede se o modelo separa acertos de erros (0,5 é acaso, 1 é perfeito).", colModel: "Modelo", colAcc: "Acurácia", noData: "sem dados",
+  models: { elo: "Elo/Rasch", irt: "TRI 3PL com EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  printBtn: "Imprimir ou salvar em PDF", download: "Baixar JSON", showJson: "Mostrar registro JSON", hideJson: "Ocultar registro JSON",
+  dataH: "Seus dados", dataP: "O progresso fica somente neste navegador. O registro segue o formato longo dos datasets de knowledge tracing (item, habilidade, acerto, idioma, timestamp).",
+  setH: "Ajustes", uiLang: "Idioma do jogo", studentName: "Nome do estudante (opcional, aparece no relatório impresso)", confirmRule: "Exigir que o domínio seja confirmado com um acerto em outro dia", theme: "Tema", themeAuto: "Automático", themeLight: "Claro", themeDark: "Escuro",
+  reset: "Apagar progresso", resetConfirm: "Confirme: apagar todo o progresso", saved: "Ajustes salvos.",
+  worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
+},
+worlds: {
+  nn: { name: "Máquinas que aprendem", question: "Como construir máquinas que aprendem a partir de dados?", about: "Redes neurais e deep learning: do perceptron à atenção." },
+  rl: { name: "Agentes que decidem", question: "Como construir agentes que tomam boas decisões?", about: "Aprendizagem por reforço: de MDPs a AlphaZero." }
+},
+game: {
+  shop: {
+    shield: ["Escudo", "Absorve a penalidade de XP da sua próxima verificação falha. Usado automaticamente."],
+    boost: ["XP em dobro", "Dobra o XP das suas próximas 3 tarefas verificadas. Ativa assim que você troca."],
+    lens: ["Lente", "Mostra, uma vez, o estado exato que a tarefa selecionada exige. Vale para a tarefa em foco."],
+    tNeuron: ["Neurônio de Ouro", "Um título exibido ao lado da sua patente."],
+    tAgent: ["Agente Racional", "Um título exibido ao lado da sua patente."],
+    tOracle: ["Oráculo de Bellman", "Um título exibido ao lado da sua patente."]
+  }
+},
+sims: {
+  perceptron: { dataset: "Conjunto", random: "Aleatório (separável)", lr: "Taxa de aprendizado", step1: "Um passo de treino", step20: "20 passos", reset: "Zerar pesos", acc: "Acurácia", steps: "Passos", best: "Melhor" },
+  represent: { target: "Função-alvo", stepfn: "degrau", bump: "lombada", act: "Ativação", hidden: "Unidades ocultas (H)", train300: "Treinar ×300", train1500: "Treinar ×1500", reinit: "Reiniciar pesos", units: "Ver cada unidade", legend: "tracejado: alvo · cheio: rede", steps: "Passos" },
+  gradient: { lr: "Taxa de aprendizado (η)", step1: "Um passo de gradiente", reset: "Reiniciar (w = -2)", steps: "Passos", fit: "reta w·x sobre os dados" },
+  backprop: { scA: "Cenário A", scB: "Cenário B (z < 0)", path: "Mostrar derivadas locais", sc: "Cenário", note: "Digite cada derivada com duas casas decimais e clique em Verificar na tarefa correspondente." },
+  optimizers: { surface: "Terreno", bowl: "Tigela alongada", valley: "Vale curvo (Rosenbrock)", lr: "Taxa de aprendizado", momentum: "Momento", run10: "10 passos", run100: "100 passos", reset: "Reiniciar", steps: "Passos" },
+  rover: { discount: "desconto", slip: "Prob. de derrapar", allR: "Tudo →", allL: "Tudo ←", walk: "Soltar o rover", tip: "Clique numa célula para virar a seta da política. As barras mostram V^π(s): o retorno esperado seguindo a sua política.", steps: "passos da última caminhada" },
+  gridworld: { discount: "desconto", slip: "Prob. de derrapar", live: "Recompensa por passo", sweep1: "Uma varredura", converge: "Até convergir", reset: "Zerar V", start: "início", sweeps: "Varreduras", done: "convergiu" }
+},
+lessons: {
+  nn01: { name: "Perceptron", about: "Neurônio artificial, fronteira linear e a regra de aprendizado.", client: "Triagem de peças na Metalúrgica São José",
+    title: "A máquina que separa peça boa de peça ruim",
+    story: "Na linha de inspeção, cada peça é medida em duas coisas: peso e brilho. Dona Célia, com trinta anos de olho treinado, olha e decide: aprovada ou refugo. Ela quer se aposentar e a fábrica precisa que uma máquina aprenda a mesma decisão. O primeiro modelo que os engenheiros tentam é o mais simples possível: uma reta no plano peso × brilho. De um lado, aprova; do outro, refuga. A pergunta é se essa reta consegue ser encontrada sozinha, a partir dos exemplos que Dona Célia já classificou, e se toda decisão dela cabe numa reta.",
+    theory: [
+      ["Um neurônio é uma soma ponderada com um limiar", "O perceptron calcula w₁x₁ + w₂x₂ + b e dispara (classe 1) se o resultado for maior ou igual a zero. Os pesos w dizem quanto cada medida importa; o viés b desloca a fronteira. Geometricamente, a equação w·x + b = 0 é uma reta, e o vetor w aponta para o lado que a rede chama de 1. Analogia: uma balança de dois pratos com um contrapeso fixo."],
+      ["A regra de aprendizado corrige só quando erra", "Para cada exemplo errado, ajuste w ← w + η(y − ŷ)x e b ← b + η(y − ŷ). Se a rede disse 0 e era 1, os pesos são puxados na direção do ponto; se disse 1 e era 0, empurrados para longe. Rosenblatt provou que, se existe uma reta que separa as classes, esse procedimento a encontra em um número finito de passos."],
+      ["Limite: só o que é linearmente separável", "Minsky e Papert (1969) mostraram que o XOR não cabe numa reta: os pontos (0,1) e (1,0) de uma classe cercam os (0,0) e (1,1) da outra. Nenhum ajuste de w resolve. A saída, que levou anos para ser aceita, é empilhar neurônios em camadas, tema da próxima fase."]
+    ],
+    tasks: { p1: { t: "Faça a rede acertar 100% no conjunto AND (à mão ou treinando).", h: "AND só é 1 no canto superior direito. Empurre a reta para cortar esse canto sozinho: w positivos e b bem negativo." },
+             p2: { t: "Escolha o conjunto Aleatório, zere os pesos e deixe a regra de treino chegar a 100% em no máximo 40 passos, sem tocar nos sliders.", h: "Cada passo corrige um ponto errado. Uma taxa de aprendizado entre 0,2 e 0,5 costuma bastar." },
+             p3: { t: "Sem mudar de conjunto (AND ou OR), leve a acurácia a 0%.", h: "Troque o sinal de w₁, w₂ e b ao mesmo tempo. A reta é a mesma; só o lado que a rede chama de 1 vira." },
+             p4: { t: "No XOR, dê pelo menos 40 passos de treino e observe que o melhor resultado nunca passa de 75%.", h: "Não há reta que resolva o XOR. O teorema de convergência só vale quando ela existe." } }
+  },
+  nn02: { name: "O que uma rede representa", about: "Camada oculta, ativações e aproximação de funções.", client: "Laboratório de calibração da Metalúrgica",
+    title: "Uma reta não faz curva",
+    story: "Depois do perceptron, o time descobriu que o sensor de brilho responde de forma estranha: a leitura sobe até um certo ponto, cai e volta a subir. A relação entre o valor bruto e o valor real do brilho é uma curva com lombadas. Um único neurônio linear traça uma reta, e reta não faz curva. A ideia dos engenheiros foi juntar vários neurônios simples e somar suas saídas, cada um cuidando de um pedaço da curva. Surpresa: com unidades suficientes, a soma consegue imitar praticamente qualquer forma.",
+    theory: [
+      ["Camada oculta: cada unidade é um pedaço de função", "Uma rede com uma camada oculta calcula ŷ = Σⱼ w₂ⱼ · g(w₁ⱼ x + b₁ⱼ) + b₂. Cada unidade oculta j aplica uma função de ativação g a uma reta. Com ReLU, cada unidade é uma dobradiça: zero até um ponto, depois uma rampa. A saída é a soma de rampas, uma linha quebrada capaz de imitar qualquer curva contínua se houver dobras suficientes."],
+      ["Teorema da aproximação universal", "Cybenko (1989) e Hornik (1991) provaram que uma camada oculta com ativação não linear e unidades suficientes aproxima qualquer função contínua num intervalo fechado, com o erro que se queira. O teorema garante que a rede existe; não diz quantas unidades são necessárias nem como encontrar os pesos. Analogia: peças de Lego bastam para construir qualquer forma, mas ninguém promete quantas nem em que ordem."],
+      ["Ativação define o que cada peça consegue fazer", "Sem ativação (g identidade), somar retas dá outra reta: a camada oculta não acrescenta nada. ReLU dá dobras; tanh dá degraus suaves. Uma única unidade ReLU não representa uma lombada, porque tem só uma dobra; são precisas pelo menos duas ou três. Contar dobras é uma boa forma de estimar quantas unidades um problema pede."]
+    ],
+    tasks: { r1: { t: "Aproxime |x| com ReLU e pelo menos 2 unidades ocultas até MSE < 0,010.", h: "|x| tem uma dobra em zero: duas rampas em direções opostas bastam." },
+             r2: { t: "Selecione a lombada com ReLU e H = 1, treine pelo menos 300 passos e observe que o erro não cai abaixo de 0,010.", h: "Uma unidade ReLU só tem uma dobra. A lombada precisa subir e descer." },
+             r3: { t: "Aproxime sin(3x) com MSE < 0,020 (qualquer ativação, qualquer H).", h: "Conte as dobras da senoide no intervalo: são várias. Aumente H e treine mais de uma vez." },
+             r4: { t: "Aproxime a lombada com ReLU até MSE < 0,006.", h: "Três ou quatro dobras bem posicionadas fazem uma lombada. Se travar, reinicie os pesos e treine de novo." } }
+  },
+  nn03: { name: "Aprendendo a rede I", about: "Função de perda, gradiente e descida.", client: "Ajuste do sensor de peso",
+    title: "Descer a montanha no nevoeiro",
+    story: "O sensor de peso da fábrica tem um fator de calibração w: o peso real é w vezes a leitura. Ninguém sabe o w certo, mas há seis peças de peso conhecido. Para cada palpite de w, dá para medir o erro médio quadrático entre o que o sensor diz e o que a balança padrão marca. Traçando o erro para cada w, aparece uma parábola: um vale. O técnico está no nevoeiro, sem enxergar o vale inteiro, mas consegue sentir a inclinação do chão sob os pés. A estratégia é sempre dar um passo para o lado que desce.",
+    theory: [
+      ["Perda mede a distância até o que queremos", "Para regressão, a perda quadrática média é L(w) = (1/n) Σᵢ (w·xᵢ − yᵢ)². Ela é sempre positiva, zero só quando acertamos tudo, e penaliza erros grandes mais que pequenos. Escolher a perda é escolher o que significa 'errar' para o problema."],
+      ["Gradiente é a inclinação do chão", "A derivada ∂L/∂w diz quanto a perda muda se w aumentar um pouco. Positiva: subindo, então w deve diminuir. Negativa: descendo, então w deve aumentar. A regra da descida de gradiente é w ← w − η · ∂L/∂w. O sinal do gradiente dá a direção; a magnitude e η dão o tamanho do passo."],
+      ["A taxa de aprendizado é o tamanho da passada", "η pequeno: chega, mas devagar. η grande demais: pula para o outro lado do vale e pode oscilar até divergir. Para uma parábola existe uma passada exata que chega ao fundo em um único passo, e ela depende da curvatura (segunda derivada). Redes reais têm milhões de w e nenhuma parábola perfeita; por isso η vira um dos hiperparâmetros mais importantes."]
+    ],
+    tasks: { g1: { t: "Leve a perda para perto do mínimo (dentro de 0,02 do menor valor possível), de qualquer forma.", h: "Arraste w e observe a bolinha descer o vale." },
+             g2: { t: "Reinicie (w = −2) e chegue perto do mínimo usando só o botão de passo, em no máximo 15 passos.", h: "η em torno de 0,3 desce rápido sem passar do ponto." },
+             g3: { t: "Escolha um η que faça a perda AUMENTAR por três passos seguidos.", h: "Acima de η = 1, cada passo pula para mais longe do outro lado do vale." },
+             g4: { t: "Reinicie e encontre o η que chega ao fundo do vale em exatamente um passo.", h: "Para L(w) = a·w² + …, a passada exata é 1/(2a). Aqui, a média de x² foi calibrada para 1." } }
+  },
+  nn04: { name: "Aprendendo a rede II: retropropagação", about: "Grafo computacional e regra da cadeia.", client: "Rede de duas camadas do controle de qualidade",
+    title: "De quem é a culpa pelo erro?",
+    story: "A rede da inspeção agora tem duas camadas: a entrada passa por um neurônio ReLU e depois por uma saída linear. Ela previu 1,75 para uma peça cujo valor certo era 1. O erro está lá na ponta, mas os pesos que precisam mudar estão espalhados pelo caminho. Como repartir a culpa? A resposta é caminhar de trás para frente, multiplicando as responsabilidades locais: é a regra da cadeia aplicada a um grafo. O nome é retropropagação, e é o que faz o deep learning ser computável.",
+    theory: [
+      ["Um grafo computacional decompõe a conta", "z = w₁x + b₁ → h = ReLU(z) → ŷ = w₂h + b₂ → L = (ŷ − y)². Cada nó faz uma operação simples e conhece a própria derivada local: ∂L/∂ŷ = 2(ŷ − y); ∂ŷ/∂h = w₂; ∂h/∂z = 1 se z > 0, senão 0; ∂z/∂w₁ = x."],
+      ["Regra da cadeia: multiplique ao longo do caminho", "∂L/∂w₁ = ∂L/∂ŷ · ∂ŷ/∂h · ∂h/∂z · ∂z/∂w₁. Cada fator é uma responsabilidade local; o produto é a responsabilidade total. Retropropagar é calcular esses produtos de trás para frente, reaproveitando resultados: o valor ∂L/∂h serve para w₁ e para b₁."],
+      ["Neurônio morto: gradiente zero interrompe a cadeia", "Se z < 0, a ReLU devolve 0 e sua derivada também é 0. Tudo que vem antes desse nó recebe gradiente nulo e para de aprender, mesmo que a saída esteja errada. Por isso existem variantes (Leaky ReLU, GELU) e por isso a inicialização importa."]
+    ],
+    tasks: { b1: { t: "No cenário A, calcule ∂L/∂ŷ.", h: "L = (ŷ − y)², então ∂L/∂ŷ = 2(ŷ − y)." },
+             b2: { t: "No cenário A, calcule ∂L/∂w₂.", h: "ŷ = w₂h + b₂: a derivada em relação a w₂ é h. Multiplique por ∂L/∂ŷ." },
+             b3: { t: "No cenário A, calcule ∂L/∂h e ∂L/∂w₁.", h: "∂L/∂h = ∂L/∂ŷ · w₂. Depois passe pela ReLU (z > 0, fator 1) e por z = w₁x + b₁ (fator x)." },
+             b4: { t: "No cenário B, calcule ∂L/∂w₂ e ∂L/∂w₁.", h: "Repare que z < 0: a ReLU está desligada. O que acontece com tudo que está antes dela?" } }
+  },
+  nn05: { name: "Treinar é otimizar", about: "SGD, momento, Adam e a geometria da perda.", client: "Time de deep learning da Metalúrgica",
+    title: "Três corredores no mesmo vale",
+    story: "A rede cresceu e o treino ficou lento. Um estagiário sugere aumentar a taxa de aprendizado; o modelo explode. Outro sugere diminuir; o treino leva a noite toda. A chefe do time desenha o problema no quadro: a superfície de perda não é uma tigela redonda, é um vale estreito e torto. A descida simples ziguezagueia de parede em parede. Há duas ideias clássicas para escapar disso: lembrar da direção que vinha dando certo (momento) e usar um passo diferente para cada parâmetro (Adam).",
+    theory: [
+      ["SGD: o gradiente de um lote, não do conjunto inteiro", "Calcular o gradiente sobre todos os dados é caro; usar um minilote dá uma estimativa ruidosa mas barata. O ruído até ajuda a sair de mínimos ruins. A regra continua θ ← θ − η∇L. O problema é geométrico: em vales alongados o gradiente aponta para a parede, não para o fundo."],
+      ["Momento: uma bola que ganha velocidade", "v ← βv − η∇L; θ ← θ + v. O parâmetro acumula velocidade nas direções consistentes e cancela o zigue-zague nas direções que trocam de sinal. Com β = 0,9, a bola lembra dos últimos ~10 passos. Nesterov olha um passo à frente antes de corrigir."],
+      ["Adam: um passo adaptado a cada parâmetro", "Adam mantém uma média do gradiente (m) e uma média do gradiente ao quadrado (v) e usa θ ← θ − η · m̂/(√v̂ + ε). Parâmetros com gradientes grandes recebem passos menores; com gradientes pequenos, maiores. Isso o torna robusto à escolha de η, mas não é mágica: em alguns problemas SGD com momento generaliza melhor."]
+    ],
+    tasks: { o1: { t: "Na tigela alongada, escolha um η que leve o SGD abaixo de 0,010 em pelo menos 50 passos.", h: "A direção y tem curvatura 10× maior. O SGD só é estável com η < 0,1." },
+             o2: { t: "Na tigela, encontre um η em que o SGD diverge (perda acima de 1000) enquanto o Adam ainda chega abaixo de 0,5.", h: "Adam normaliza o passo por parâmetro; o SGD não. Experimente η ≥ 0,12 e 50 passos ou mais." },
+             o3: { t: "No vale curvo, mostre que o momento chega a uma perda menor que a do SGD após 200 passos, ficando abaixo de 1.", h: "Use η pequeno (0,01) e β = 0,9. O SGD fica preso no ziguezague; a bola com momento ganha velocidade ao longo do vale." },
+             o4: { t: "No vale curvo, leve o Adam abaixo de 0,010 em no máximo 600 passos.", h: "Adam aguenta η maior que o SGD neste terreno: tente 0,05 a 0,1." } }
+  },
+  nn06: { name: "A rede que decora", about: "Sobreajuste, regularização e generalização." },
+  nn07: { name: "Redes que enxergam", about: "Convolução, filtros e invariância." },
+  nn08: { name: "Redes que leem", about: "Sequências, recorrência e memória." },
+  nn09: { name: "Atenção", about: "Quando a rede aprende onde olhar." },
+  nn10: { name: "Aprender sem professor", about: "Autoencoders e embeddings." },
+  nn11: { name: "Memória e mapas", about: "Hopfield, Kohonen e aprendizado hebbiano." },
+  nn12: { name: "Interpolação e campos neurais", about: "Aplicações: representar sinais com redes." },
+  nn13: { name: "Classificação em escala", about: "Projeto de redes para problemas grandes." },
+  nn14: { name: "O mapa da inteligência computacional", about: "Encerramento: os três paradigmas e o que ficou." },
+
+  rl01: { name: "Introdução à aprendizagem por reforço", about: "Recompensa, retorno, desconto e política.", client: "Rover no cânion de Marte",
+    title: "Dez pontos lá longe ou um ponto aqui perto",
+    story: "Um rover está parado num corredor de sete posições. Na ponta esquerda há uma amostra de rocha comum, que vale 1 ponto de ciência. Na ponta direita, uma amostra rara, que vale 10. Cada movimento consome bateria e tempo, e a missão pode ser cancelada a qualquer momento. O rover não escolhe uma vez: ele precisa de uma regra que diga, em cada posição, para que lado ir. Essa regra é a política. O quanto ele valoriza o futuro em relação ao presente é o desconto. E o valor de estar numa posição é o total de recompensa que ele espera acumular a partir dali.",
+    theory: [
+      ["O ciclo agente-ambiente", "A cada instante o agente observa o estado s, escolhe uma ação a, o ambiente devolve uma recompensa r e o próximo estado s'. O objetivo não é a recompensa imediata, mas o retorno: G = r₁ + γ r₂ + γ² r₃ + …. O fator de desconto γ ∈ [0,1) torna a soma finita e expressa quanto o futuro vale hoje: com γ = 0,9, uma recompensa daqui a 10 passos vale 0,9¹⁰ ≈ 35% de uma agora."],
+      ["Política e função de valor", "Uma política π diz qual ação tomar em cada estado. A função de valor V^π(s) é o retorno esperado começando em s e seguindo π. Para o rover com política 'sempre à direita', V(s₂) = γ⁴ · 10, porque são cinco movimentos até a amostra rara. Comparar V^π de políticas diferentes é o jeito de saber qual é melhor."],
+      ["Equação de Bellman: o valor de hoje depende do valor de amanhã", "V^π(s) = Σ_a π(a|s) Σ_s' P(s'|s,a)[R + γ V^π(s')]. É uma relação recursiva: o valor de um estado é a recompensa imediata mais o valor descontado de onde se chega. Ela permite calcular V^π iterativamente, sem simular caminhadas, e é a base de tudo que vem depois."]
+    ],
+    tasks: { m1: { t: "Com γ = 0,90 e sem derrapagem, faça a política levar o rover à amostra rara a partir de s2 com V(s2) > 5.", h: "Todas as setas para a direita. Cinco passos: 0,9⁴ × 10 ≈ 6,6." },
+             m2: { t: "Ajuste γ = 0,50 e encontre a política ótima: ela vai para a esquerda em s2 e para a direita em s3.", h: "Com γ pequeno o futuro vale pouco: em s2, 1 ponto aqui do lado vence 10 pontos a cinco passos (10 × 0,5⁴ = 0,6). Em s3, 10 × 0,5³ = 1,25 vence 0,5." },
+             m3: { t: "Com γ ≥ 0,90, encontre a política ótima (todas as setas para a direita).", h: "Quando o futuro vale quase tanto quanto o presente, vale a pena andar até a amostra rara de qualquer lugar." },
+             m4: { t: "Encontre um γ em que a política ótima seja ← em s2, ← em s3 e → em s4, e configure-a.", h: "Em s3: ir à esquerda vale γ; ir à direita vale 10γ³. Esquerda vence quando γ² < 0,1, ou seja, γ < 0,32." } }
+  },
+  rl02: { name: "Decisões com modelo do mundo", about: "MDPs, iteração de valor e políticas ótimas.", client: "Rover num terreno com buraco",
+    title: "Quando o chão escorrega",
+    story: "O terreno agora é uma grade de 3 × 4. Numa célula está a base (+1); ao lado dela, um buraco (−1) de onde o rover não sai. Há uma pedra que bloqueia uma célula. O pior: o solo é arenoso, e em 20% das vezes o rover derrapa para um dos lados em vez de ir para onde mandaram. Cada passo gasta um pouco de bateria. A equipe tem o modelo completo do mundo: sabe as probabilidades e as recompensas. Com isso, dá para calcular a melhor política antes de mover uma roda, repetindo a equação de Bellman até os valores pararem de mudar.",
+    theory: [
+      ["MDP: estados, ações, transições, recompensas e desconto", "Um processo de decisão de Markov é a tupla (S, A, P, R, γ). A propriedade de Markov diz que o futuro depende só do estado atual, não do caminho. Com P e R conhecidos (o 'modelo do mundo'), não é preciso experimentar: dá para planejar."],
+      ["Iteração de valor", "Comece com V = 0 e repita V(s) ← R(s) + γ max_a Σ_s' P(s'|s,a) V(s') para todo s. Cada varredura propaga informação uma célula adiante, como uma onda saindo da base. A sequência converge para V* (o operador de Bellman é uma contração), e a política gulosa em V* é ótima."],
+      ["Risco, custo de viver e horizonte", "Três botões mudam a política ótima: a probabilidade de derrapar (quanto risco há em passar perto do buraco), a recompensa por passo (quão caro é demorar) e γ (quão longe o agente olha). Um custo por passo muito negativo faz o rover arriscar o caminho curto; derrapagem alta o faz preferir o caminho longo colado na parede."]
+    ],
+    tasks: { w1: { t: "Rode a iteração de valor até convergir (Δ < 0,001).", h: "Cada varredura muda menos que a anterior. O botão 'Até convergir' repete varreduras enquanto Δ for grande." },
+             w2: { t: "Com derrapagem 0,20 e recompensa por passo −0,04, converja e observe que na célula (2,3), embaixo do buraco, a ação gulosa é ← (contornar).", h: "Subir de (2,3) cai no buraco em 80% das vezes. Ir para a esquerda mantém o rover longe dele, mesmo derrapando." },
+             w3: { t: "Mantenha derrapagem 0,20 e torne a recompensa por passo tão negativa que, em (2,3), subir direto passe a ser a ação gulosa.", h: "Quando cada passo dói muito, o caminho longo custa mais que o risco. Tente valores abaixo de −0,4." },
+             w4: { t: "Sem derrapagem, γ = 1,00 e recompensa −0,04, converja e confirme que V(início) = 0,80.", h: "Do início até a base são 5 células não terminais: 5 × (−0,04) + 1 = 0,80." } }
+  },
+  rl03: { name: "Avaliação de política sem modelo", about: "Monte Carlo e diferença temporal." },
+  rl04: { name: "Controle sem modelo", about: "Q-Learning, SARSA e aproximação de função valor." },
+  rl05: { name: "Gradientes de política I", about: "REINFORCE e o teorema do gradiente de política." },
+  rl06: { name: "Gradientes de política II", about: "Variância, regiões de confiança e PPO." },
+  rl07: { name: "PPO, GAE e imitação", about: "Estimativa de vantagem e aprender com demonstrações." },
+  rl08: { name: "Imitação, recompensa e RLHF", about: "Aprender a função de recompensa a partir de humanos." },
+  rl09: { name: "Bandidos e arrependimento", about: "Exploração vs. explotação, UCB e regret." },
+  rl10: { name: "Aprendizado rápido II", about: "Exploração eficiente e limites de amostra." },
+  rl11: { name: "Bandidos bayesianos", about: "Thompson sampling e crenças sobre recompensas." },
+  rl12: { name: "Aprendizagem rápida em MDPs", about: "Otimismo, bônus de exploração e eficiência amostral." },
+  rl13: { name: "MCTS e a família AlphaZero", about: "Busca em árvore Monte Carlo guiada por rede." },
+  rl14: { name: "MCTS II: AlphaZero", about: "Auto-jogo, política e valor numa só rede." }
+}
+};

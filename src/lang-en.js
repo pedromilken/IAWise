@@ -1,0 +1,185 @@
+LANG.en = {
+name: "English",
+ui: {
+  navHome: "Home", navMap: "Map", navShop: "Shop", navReport: "Report", navSettings: "Settings",
+  xp: "XP", balance: "Balance", total: "Lifetime XP", role: "Rank", streak: "Streak",
+  roles: ["Apprentice", "Lab assistant", "Researcher", "Scientist", "Oracle"],
+  homeH: "Learn neural networks and intelligent agents by turning the gears yourself",
+  homeLead: "Two worlds, 28 stages, one question per world. In each stage you hear a story, build a theory toolkit and then step into a simulator where you adjust weights, gradients, policies and rewards with your own hands. Simulator tasks are the proof that you understood; a knowledge-tracing tutor follows your mastery of every stage.",
+  homeQ1: "How do we build machines that learn from data?", homeQ2: "How do we build agents that make good decisions?",
+  start: "Start from the map", cont: "Continue where I left off",
+  steps: [["Hear the story", "A real problem from real people: the factory that must sort good parts from bad ones, the rover that must decide where to go."],
+          ["Build the toolkit", "Three essential concepts explained with practical analogies, plus the notation used in the course slides."],
+          ["Play with the simulator", "No memorizing: you turn the gradient knob, flip the policy arrow and see the result at once. Every verified task becomes XP and evidence of mastery."]],
+  homeSrc: "Content derived from the courses GBC073 (Computational Intelligence) and GBC063 (Artificial Intelligence), UFU/FACOM, open material (CC0) by Prof. Albertini.",
+  homeI18n: "Available in Portuguese and English.",
+  kPhases: "stages with a simulator", kTasks: "verifiable tasks", kMastered: "stages mastered",
+  mapHint: "Tap a stage for details. The number is the estimated mastery.",
+  locked: "Locked: needs 60% in {p}.", lockedXp: "Locked: needs 60% in {p} and {x} lifetime XP (you have {y}).", lockedXpOnly: "Locked: needs {x} lifetime XP (you have {y}).",
+  soon: "Simulator under construction", soonP: "This stage already has its place on the map. Story, toolkit and simulator arrive in the next versions.",
+  open: "Enter the stage", and: " and ",
+  stL: "Locked", stP: "In progress", stM: "Mastered", stC: "To confirm on another day", stB: "Unlocked",
+  tabStory: "Story", tabTheory: "Theory toolkit", tabSim: "Simulator",
+  client: "Scenario", goSim: "I'm ready: open the simulator", back: "Back to the map",
+  tasksH: "Simulator tasks", verify: "Verify", verified: "Done", hint: "Ask for a hint", noHints: "No hints in this mode.",
+  taskOk: "Task verified! +{x} XP", taskFail: "Not yet. The simulator is not in the requested state.", lost: "Penalty: -{x} XP from your balance.",
+  shieldUsed: "Your shield absorbed the penalty.", comeback: "Comeback: +{x} XP for getting it right just after a miss.", streakMsg: "{n} in a row! Bonus: +5 XP.",
+  boostOn: "Double XP: {n} tasks left", masteredNow: "Stage mastered: {s}.", unlockedNow: "New stage unlocked: {s}.", promo: "Promotion: your rank is now {r}.",
+  cheers: ["Nice one!", "That is understanding from the inside!", "The simulator doesn't lie: spot on!", "Stage advancing with style!"],
+  oops: ["Almost. Adjust a little more and verify again.", "Missing here is cheap: that's what the simulator is for.", "Reread the task: which exact state does it ask for?", "Not this time. The hint may help."],
+  allDone: "Every task in this stage is done. Keep exploring or go back to the map.",
+  modeH: "Difficulty", modes: { normal: "Normal", medio: "Medium", dificil: "Hard", hardcore: "Extra hardcore" },
+  modeDesc: { normal: "XP ×1. Free hints (with a hint, a hit is worth half). Each failed verification costs 2 XP per task level.", medio: "XP ×1.5. Free hints. Each failed verification costs 4 XP per level.", dificil: "XP ×2. No hints. Each failed verification costs 6 XP per level.", hardcore: "XP ×3. No hints. Each failed verification costs 10 XP per level." },
+  shopH: "Shop", shopP: "Trade XP balance for powers and titles. Spending balance does not reduce lifetime XP, which is what unlocks stages.", powers: "Powers", titlesH: "Titles", buy: "Trade for {c} XP", need: "{n} XP short (costs {c})", owned: "You have: {n}", equip: "Use this title", equipped: "In use", unequip: "Stop using",
+  repH: "Learning report", repSub: "For the student and whoever supports them: what is mastered, where the misses are and what to practise next.", repFor: "Student: {n}", printedOn: "Generated on {d}",
+  k1: "tasks verified", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
+  bySkill: "Mastery by stage", colSkill: "Stage", colMastery: "Mastery", colTries: "Checks", colHits: "Hits", colStatus: "Status",
+  recs: "Tutor recommendations", recNone: "No answers yet. Verify a few tasks so the tutor has evidence.", recPriority: "Priority: {s} ({p} mastery, {c} hits out of {n}).", recLocked: "Still locked: {s}. They open when the prerequisites pass 60%.",
+  how: "How mastery is computed", howP: "The tutor uses the Elo/Rasch model: each stage has a mastery score and each task a difficulty on the same scale. The gap gives the probability of a hit; after each check the score moves up or down in proportion to the surprise. A stage counts as mastered from {m}. BKT, PFA, AFM and 3PL IRT run in the background and only record their predictions for comparison.",
+  cmpH: "Model comparison on this trajectory", cmpP: "Before each check the five models record the hit probability they predicted. Brier measures prediction error (lower is better); AUC measures whether the model separates hits from misses (0.5 is chance, 1 is perfect).", colModel: "Model", colAcc: "Accuracy", noData: "no data",
+  models: { elo: "Elo/Rasch", irt: "3PL IRT with EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  printBtn: "Print or save as PDF", download: "Download JSON", showJson: "Show JSON log", hideJson: "Hide JSON log",
+  dataH: "Your data", dataP: "Progress lives only in this browser. The log follows the long format of knowledge-tracing datasets (item, skill, correct, language, timestamp).",
+  setH: "Settings", uiLang: "Game language", studentName: "Student name (optional, shown on the printed report)", confirmRule: "Require mastery to be confirmed by a hit on another day", theme: "Theme", themeAuto: "Automatic", themeLight: "Light", themeDark: "Dark",
+  reset: "Erase progress", resetConfirm: "Confirm: erase all progress", saved: "Settings saved.",
+  worldQ: "World question", lesson: "Lecture", of: "of"
+},
+worlds: {
+  nn: { name: "Machines that learn", question: "How do we build machines that learn from data?", about: "Neural networks and deep learning: from the perceptron to attention." },
+  rl: { name: "Agents that decide", question: "How do we build agents that make good decisions?", about: "Reinforcement learning: from MDPs to AlphaZero." }
+},
+game: {
+  shop: {
+    shield: ["Shield", "Absorbs the XP penalty of your next failed check. Used automatically."],
+    boost: ["Double XP", "Doubles the XP of your next 3 verified tasks. Active as soon as you trade."],
+    lens: ["Lens", "Reveals, once, the exact state the selected task requires."],
+    tNeuron: ["Golden Neuron", "A title shown next to your rank."],
+    tAgent: ["Rational Agent", "A title shown next to your rank."],
+    tOracle: ["Bellman's Oracle", "A title shown next to your rank."]
+  }
+},
+sims: {
+  perceptron: { dataset: "Dataset", random: "Random (separable)", lr: "Learning rate", step1: "One training step", step20: "20 steps", reset: "Reset weights", acc: "Accuracy", steps: "Steps", best: "Best" },
+  represent: { target: "Target function", stepfn: "step", bump: "bump", act: "Activation", hidden: "Hidden units (H)", train300: "Train ×300", train1500: "Train ×1500", reinit: "Re-init weights", units: "Show each unit", legend: "dashed: target · solid: network", steps: "Steps" },
+  gradient: { lr: "Learning rate (η)", step1: "One gradient step", reset: "Reset (w = -2)", steps: "Steps", fit: "line w·x over the data" },
+  backprop: { scA: "Scenario A", scB: "Scenario B (z < 0)", path: "Show local derivatives", sc: "Scenario", note: "Type each derivative with two decimals and click Verify on the matching task." },
+  optimizers: { surface: "Terrain", bowl: "Elongated bowl", valley: "Curved valley (Rosenbrock)", lr: "Learning rate", momentum: "Momentum", run10: "10 steps", run100: "100 steps", reset: "Reset", steps: "Steps" },
+  rover: { discount: "discount", slip: "Slip probability", allR: "All →", allL: "All ←", walk: "Release the rover", tip: "Click a cell to flip the policy arrow. Bars show V^π(s): the expected return following your policy.", steps: "steps in the last walk" },
+  gridworld: { discount: "discount", slip: "Slip probability", live: "Reward per step", sweep1: "One sweep", converge: "Until convergence", reset: "Reset V", start: "start", sweeps: "Sweeps", done: "converged" }
+},
+lessons: {
+  nn01: { name: "Perceptron", about: "Artificial neuron, linear boundary and the learning rule.", client: "Part sorting at São José Metalworks",
+    title: "The machine that tells good parts from bad ones",
+    story: "On the inspection line every part is measured on two things: weight and shine. Dona Célia, with thirty years of trained eyes, looks and decides: approved or scrap. She wants to retire and the factory needs a machine to learn the same decision. The first model the engineers try is the simplest possible: a straight line on the weight × shine plane. On one side, approve; on the other, scrap. The question is whether that line can be found on its own, from the examples Dona Célia already labelled, and whether every decision she makes fits on a line.",
+    theory: [
+      ["A neuron is a weighted sum with a threshold", "The perceptron computes w₁x₁ + w₂x₂ + b and fires (class 1) if the result is greater than or equal to zero. The weights w say how much each measurement matters; the bias b shifts the boundary. Geometrically, w·x + b = 0 is a line, and the vector w points to the side the network calls 1. Analogy: a two-pan scale with a fixed counterweight."],
+      ["The learning rule only corrects on mistakes", "For each misclassified example, update w ← w + η(y − ŷ)x and b ← b + η(y − ŷ). If the network said 0 and it was 1, the weights are pulled towards the point; if it said 1 and it was 0, pushed away. Rosenblatt proved that if a separating line exists, this procedure finds one in a finite number of steps."],
+      ["Limit: only what is linearly separable", "Minsky and Papert (1969) showed that XOR does not fit on a line: the points (0,1) and (1,0) of one class surround (0,0) and (1,1) of the other. No adjustment of w solves it. The way out, which took years to be accepted, is stacking neurons in layers, the topic of the next stage."]
+    ],
+    tasks: { p1: { t: "Make the network score 100% on the AND set (by hand or by training).", h: "AND is only 1 in the top-right corner. Push the line to cut that corner alone: positive weights and a clearly negative b." },
+             p2: { t: "Choose the Random set, reset the weights and let the training rule reach 100% in at most 40 steps, without touching the sliders.", h: "Each step corrects one wrong point. A learning rate between 0.2 and 0.5 is usually enough." },
+             p3: { t: "Without changing the set (AND or OR), bring accuracy down to 0%.", h: "Flip the sign of w₁, w₂ and b at the same time. The line is the same; only the side the network calls 1 flips." },
+             p4: { t: "On XOR, take at least 40 training steps and observe that the best result never exceeds 75%.", h: "No line solves XOR. The convergence theorem only holds when one exists." } }
+  },
+  nn02: { name: "What a network can represent", about: "Hidden layer, activations and function approximation.", client: "Calibration lab at the Metalworks",
+    title: "A line cannot bend",
+    story: "After the perceptron, the team discovered that the shine sensor responds oddly: the reading rises up to a point, drops and rises again. The relation between raw value and true shine is a curve with bumps. A single linear neuron draws a line, and a line cannot bend. The engineers' idea was to combine several simple neurons and add their outputs, each one taking care of a piece of the curve. Surprise: with enough units, the sum can imitate almost any shape.",
+    theory: [
+      ["Hidden layer: every unit is a piece of a function", "A one-hidden-layer network computes ŷ = Σⱼ w₂ⱼ · g(w₁ⱼ x + b₁ⱼ) + b₂. Each hidden unit j applies an activation g to a line. With ReLU, each unit is a hinge: zero up to a point, then a ramp. The output is a sum of ramps, a broken line that can imitate any continuous curve if there are enough bends."],
+      ["Universal approximation theorem", "Cybenko (1989) and Hornik (1991) proved that one hidden layer with a non-linear activation and enough units approximates any continuous function on a closed interval to any desired accuracy. The theorem guarantees the network exists; it does not say how many units are needed nor how to find the weights. Analogy: Lego bricks can build any shape, but nobody promises how many or in what order."],
+      ["The activation defines what each piece can do", "Without an activation (g = identity), adding lines gives another line: the hidden layer adds nothing. ReLU gives bends; tanh gives smooth steps. A single ReLU unit cannot represent a bump, because it has only one bend; at least two or three are needed. Counting bends is a good way to estimate how many units a problem asks for."]
+    ],
+    tasks: { r1: { t: "Approximate |x| with ReLU and at least 2 hidden units until MSE < 0.010.", h: "|x| has one bend at zero: two ramps in opposite directions are enough." },
+             r2: { t: "Select the bump with ReLU and H = 1, train at least 300 steps and observe that the error does not fall below 0.010.", h: "One ReLU unit has a single bend. The bump must go up and come down." },
+             r3: { t: "Approximate sin(3x) with MSE < 0.020 (any activation, any H).", h: "Count the bends of the sine wave in the interval: several. Increase H and train more than once." },
+             r4: { t: "Approximate the bump with ReLU until MSE < 0.006.", h: "Three or four well-placed bends make a bump. If it gets stuck, re-init the weights and train again." } }
+  },
+  nn03: { name: "Learning the network I", about: "Loss function, gradient and descent.", client: "Weight sensor calibration",
+    title: "Walking downhill in the fog",
+    story: "The factory's weight sensor has a calibration factor w: true weight is w times the reading. Nobody knows the right w, but there are six parts of known weight. For each guess of w one can measure the mean squared error between what the sensor says and what the reference scale shows. Plotting the error for every w reveals a parabola: a valley. The technician is in the fog, unable to see the whole valley, but can feel the slope of the ground under his feet. The strategy is always to take a step towards the downhill side.",
+    theory: [
+      ["The loss measures the distance to what we want", "For regression, the mean squared loss is L(w) = (1/n) Σᵢ (w·xᵢ − yᵢ)². It is always positive, zero only when we get everything right, and it punishes large errors more than small ones. Choosing the loss is choosing what 'being wrong' means for the problem."],
+      ["The gradient is the slope of the ground", "The derivative ∂L/∂w says how much the loss changes if w grows a little. Positive: going up, so w should decrease. Negative: going down, so w should increase. The gradient-descent rule is w ← w − η · ∂L/∂w. The sign of the gradient gives the direction; its magnitude and η give the step size."],
+      ["The learning rate is the length of the stride", "Small η: arrives, but slowly. Too large: jumps to the other side of the valley and may oscillate until it diverges. For a parabola there is an exact stride that reaches the bottom in a single step, and it depends on the curvature (second derivative). Real networks have millions of w and no perfect parabola; that is why η becomes one of the most important hyperparameters."]
+    ],
+    tasks: { g1: { t: "Bring the loss close to the minimum (within 0.02 of the smallest possible value), any way you like.", h: "Drag w and watch the ball roll down the valley." },
+             g2: { t: "Reset (w = −2) and get close to the minimum using only the step button, in at most 15 steps.", h: "η around 0.3 goes down fast without overshooting." },
+             g3: { t: "Pick an η that makes the loss INCREASE for three consecutive steps.", h: "Above η = 1, each step jumps further away to the other side of the valley." },
+             g4: { t: "Reset and find the η that reaches the bottom of the valley in exactly one step.", h: "For L(w) = a·w² + …, the exact stride is 1/(2a). Here the mean of x² was calibrated to 1." } }
+  },
+  nn04: { name: "Learning the network II: backpropagation", about: "Computational graph and the chain rule.", client: "Two-layer quality-control network",
+    title: "Who is to blame for the error?",
+    story: "The inspection network now has two layers: the input goes through a ReLU neuron and then a linear output. It predicted 1.75 for a part whose true value was 1. The error sits at the very end, but the weights that need to change are spread along the path. How to share the blame? The answer is to walk backwards, multiplying local responsibilities: the chain rule applied to a graph. Its name is backpropagation, and it is what makes deep learning computable.",
+    theory: [
+      ["A computational graph breaks the calculation down", "z = w₁x + b₁ → h = ReLU(z) → ŷ = w₂h + b₂ → L = (ŷ − y)². Each node does one simple operation and knows its own local derivative: ∂L/∂ŷ = 2(ŷ − y); ∂ŷ/∂h = w₂; ∂h/∂z = 1 if z > 0, else 0; ∂z/∂w₁ = x."],
+      ["Chain rule: multiply along the path", "∂L/∂w₁ = ∂L/∂ŷ · ∂ŷ/∂h · ∂h/∂z · ∂z/∂w₁. Each factor is a local responsibility; the product is the total responsibility. Backpropagating means computing these products from back to front, reusing results: the value ∂L/∂h serves both w₁ and b₁."],
+      ["Dead neuron: a zero gradient breaks the chain", "If z < 0, ReLU returns 0 and its derivative is also 0. Everything before that node receives a null gradient and stops learning, even though the output is wrong. That is why variants exist (Leaky ReLU, GELU) and why initialization matters."]
+    ],
+    tasks: { b1: { t: "In scenario A, compute ∂L/∂ŷ.", h: "L = (ŷ − y)², so ∂L/∂ŷ = 2(ŷ − y)." },
+             b2: { t: "In scenario A, compute ∂L/∂w₂.", h: "ŷ = w₂h + b₂: the derivative with respect to w₂ is h. Multiply by ∂L/∂ŷ." },
+             b3: { t: "In scenario A, compute ∂L/∂h and ∂L/∂w₁.", h: "∂L/∂h = ∂L/∂ŷ · w₂. Then pass through the ReLU (z > 0, factor 1) and through z = w₁x + b₁ (factor x)." },
+             b4: { t: "In scenario B, compute ∂L/∂w₂ and ∂L/∂w₁.", h: "Notice that z < 0: the ReLU is off. What happens to everything before it?" } }
+  },
+  nn05: { name: "Training is optimizing", about: "SGD, momentum, Adam and the geometry of the loss.", client: "The Metalworks deep learning team",
+    title: "Three runners in the same valley",
+    story: "The network grew and training got slow. One intern suggests raising the learning rate; the model blows up. Another suggests lowering it; training takes all night. The team lead draws the problem on the board: the loss surface is not a round bowl, it is a narrow, crooked valley. Plain descent zigzags from wall to wall. There are two classic ideas to escape that: remember the direction that was working (momentum) and use a different step for each parameter (Adam).",
+    theory: [
+      ["SGD: the gradient of a batch, not of the whole set", "Computing the gradient over all data is expensive; using a mini-batch gives a noisy but cheap estimate. The noise even helps escape bad minima. The rule is still θ ← θ − η∇L. The problem is geometric: in elongated valleys the gradient points at the wall, not at the bottom."],
+      ["Momentum: a ball that gains speed", "v ← βv − η∇L; θ ← θ + v. The parameter accumulates velocity in consistent directions and cancels the zigzag in directions that flip sign. With β = 0.9 the ball remembers the last ~10 steps. Nesterov looks one step ahead before correcting."],
+      ["Adam: a step adapted to each parameter", "Adam keeps an average of the gradient (m) and of the squared gradient (v) and uses θ ← θ − η · m̂/(√v̂ + ε). Parameters with large gradients get smaller steps; with small gradients, larger ones. That makes it robust to the choice of η, but it is not magic: on some problems SGD with momentum generalizes better."]
+    ],
+    tasks: { o1: { t: "On the elongated bowl, choose an η that takes SGD below 0.010 in at least 50 steps.", h: "The y direction has 10× the curvature. SGD is only stable with η < 0.1." },
+             o2: { t: "On the bowl, find an η where SGD diverges (loss above 1000) while Adam still gets below 0.5.", h: "Adam normalizes the step per parameter; SGD does not. Try η ≥ 0.12 and 50 steps or more." },
+             o3: { t: "On the curved valley, show that momentum reaches a lower loss than SGD after 200 steps, staying below 1.", h: "Use a small η (0.01) and β = 0.9. SGD gets stuck zigzagging; the ball with momentum gains speed along the valley." },
+             o4: { t: "On the curved valley, take Adam below 0.010 in at most 600 steps.", h: "Adam tolerates a larger η than SGD on this terrain: try 0.05 to 0.1." } }
+  },
+  nn06: { name: "The network that memorizes", about: "Overfitting, regularization and generalization." },
+  nn07: { name: "Networks that see", about: "Convolution, filters and invariance." },
+  nn08: { name: "Networks that read", about: "Sequences, recurrence and memory." },
+  nn09: { name: "Attention", about: "When the network learns where to look." },
+  nn10: { name: "Learning without a teacher", about: "Autoencoders and embeddings." },
+  nn11: { name: "Memory and maps", about: "Hopfield, Kohonen and Hebbian learning." },
+  nn12: { name: "Interpolation and neural fields", about: "Applications: representing signals with networks." },
+  nn13: { name: "Classification at scale", about: "Designing networks for large problems." },
+  nn14: { name: "The map of computational intelligence", about: "Closing: the three paradigms and what remains." },
+
+  rl01: { name: "Introduction to reinforcement learning", about: "Reward, return, discount and policy.", client: "Rover in a Martian canyon",
+    title: "Ten points far away or one point right here",
+    story: "A rover sits in a corridor of seven positions. At the left end there is a common rock sample worth 1 science point. At the right end, a rare sample worth 10. Every move consumes battery and time, and the mission may be cancelled at any moment. The rover does not choose once: it needs a rule that says, at each position, which way to go. That rule is the policy. How much it values the future relative to the present is the discount. And the value of being at a position is the total reward it expects to accumulate from there.",
+    theory: [
+      ["The agent-environment loop", "At each instant the agent observes state s, chooses action a, the environment returns a reward r and the next state s'. The goal is not the immediate reward but the return: G = r₁ + γ r₂ + γ² r₃ + …. The discount factor γ ∈ [0,1) makes the sum finite and expresses how much the future is worth today: with γ = 0.9, a reward 10 steps away is worth 0.9¹⁰ ≈ 35% of one now."],
+      ["Policy and value function", "A policy π says which action to take in each state. The value function V^π(s) is the expected return starting at s and following π. For the rover with policy 'always right', V(s₂) = γ⁴ · 10, because it takes five moves to reach the rare sample. Comparing V^π of different policies is how we know which is better."],
+      ["Bellman equation: today's value depends on tomorrow's", "V^π(s) = Σ_a π(a|s) Σ_s' P(s'|s,a)[R + γ V^π(s')]. It is a recursive relation: the value of a state is the immediate reward plus the discounted value of where you land. It lets us compute V^π iteratively, without simulating walks, and it is the basis of everything that follows."]
+    ],
+    tasks: { m1: { t: "With γ = 0.90 and no slipping, make the policy take the rover to the rare sample from s2 with V(s2) > 5.", h: "All arrows to the right. Five steps: 0.9⁴ × 10 ≈ 6.6." },
+             m2: { t: "Set γ = 0.50 and find the optimal policy: it goes left at s2 and right at s3.", h: "With small γ the future is worth little: at s2, 1 point next door beats 10 points five steps away (10 × 0.5⁴ = 0.6). At s3, 10 × 0.5³ = 1.25 beats 0.5." },
+             m3: { t: "With γ ≥ 0.90, find the optimal policy (all arrows to the right).", h: "When the future is worth almost as much as the present, walking to the rare sample pays off from anywhere." },
+             m4: { t: "Find a γ where the optimal policy is ← at s2, ← at s3 and → at s4, and configure it.", h: "At s3: going left is worth γ; going right is worth 10γ³. Left wins when γ² < 0.1, that is, γ < 0.32." } }
+  },
+  rl02: { name: "Decisions with a model of the world", about: "MDPs, value iteration and optimal policies.", client: "Rover on terrain with a pit",
+    title: "When the ground slips",
+    story: "The terrain is now a 3 × 4 grid. One cell holds the base (+1); next to it, a pit (−1) the rover cannot leave. A rock blocks one cell. Worse: the soil is sandy, and 20% of the time the rover slips sideways instead of going where it was told. Every step drains a little battery. The team has the complete model of the world: it knows the probabilities and the rewards. With that, the best policy can be computed before moving a wheel, by repeating the Bellman equation until the values stop changing.",
+    theory: [
+      ["MDP: states, actions, transitions, rewards and discount", "A Markov decision process is the tuple (S, A, P, R, γ). The Markov property says the future depends only on the current state, not on the path. With P and R known (the 'model of the world'), no experimenting is needed: one can plan."],
+      ["Value iteration", "Start with V = 0 and repeat V(s) ← R(s) + γ max_a Σ_s' P(s'|s,a) V(s') for every s. Each sweep propagates information one cell further, like a wave leaving the base. The sequence converges to V* (the Bellman operator is a contraction), and the greedy policy on V* is optimal."],
+      ["Risk, cost of living and horizon", "Three knobs change the optimal policy: the slip probability (how risky it is to pass near the pit), the reward per step (how expensive it is to take long) and γ (how far the agent looks). A very negative per-step cost makes the rover risk the short path; high slip makes it prefer the long path hugging the wall."]
+    ],
+    tasks: { w1: { t: "Run value iteration until convergence (Δ < 0.001).", h: "Each sweep changes less than the previous one. The 'Until convergence' button repeats sweeps while Δ is large." },
+             w2: { t: "With slip 0.20 and reward per step −0.04, converge and observe that at cell (2,3), below the pit, the greedy action is ← (go around).", h: "Going up from (2,3) lands in the pit 80% of the time. Going left keeps you away from it even when slipping." },
+             w3: { t: "Keep slip at 0.20 and make the reward per step so negative that, at (2,3), going straight up becomes the greedy action.", h: "When every step hurts a lot, the long way costs more than the risk. Try values below −0.4." },
+             w4: { t: "No slip, γ = 1.00 and reward −0.04: converge and confirm that V(start) = 0.80.", h: "From the start to the base there are 5 non-terminal cells: 5 × (−0.04) + 1 = 0.80." } }
+  },
+  rl03: { name: "Model-free policy evaluation", about: "Monte Carlo and temporal difference." },
+  rl04: { name: "Model-free control", about: "Q-learning, SARSA and value-function approximation." },
+  rl05: { name: "Policy gradients I", about: "REINFORCE and the policy gradient theorem." },
+  rl06: { name: "Policy gradients II", about: "Variance, trust regions and PPO." },
+  rl07: { name: "PPO, GAE and imitation", about: "Advantage estimation and learning from demonstrations." },
+  rl08: { name: "Imitation, reward learning and RLHF", about: "Learning the reward function from humans." },
+  rl09: { name: "Bandits and regret", about: "Exploration vs. exploitation, UCB and regret." },
+  rl10: { name: "Fast learning II", about: "Efficient exploration and sample bounds." },
+  rl11: { name: "Bayesian bandits", about: "Thompson sampling and beliefs about rewards." },
+  rl12: { name: "Fast learning in MDPs", about: "Optimism, exploration bonuses and sample efficiency." },
+  rl13: { name: "MCTS and the AlphaZero family", about: "Monte Carlo tree search guided by a network." },
+  rl14: { name: "MCTS II: AlphaZero", about: "Self-play, policy and value in a single network." }
+}
+};

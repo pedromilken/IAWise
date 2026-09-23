@@ -53,6 +53,7 @@ ui: {
   llmH: "Tutor de IA (sua própria chave)", llmP: "Escolha um provedor e cole sua chave de API. Ela fica somente neste navegador e é enviada direto ao provedor; o jogo não tem servidor.",
   llmProvider: "Provedor", llmKey: "Chave de API", llmModel: "Modelo (opcional)", llmUrl: "URL do endpoint", llmTest: "Testar conexão", llmForget: "Esquecer chave",
   llmNote: "Atenção: uma chave guardada no navegador pode ser lida por quem tiver acesso à máquina. Prefira chaves com limite de gasto. Alguns provedores bloqueiam chamadas diretas do navegador (CORS); nesse caso, use OpenRouter ou um proxy próprio.",
+  tutorRetry: "Tentar de novo", tutorThinking: "Pensando…", tutorBusy: "Provedor ocupado, tentando de novo ({n}/3)…", tutorFallback: "Modelo indisponível; tentando o reserva…", tutorOverload: "O provedor está sobrecarregado agora (não é problema da sua chave). Tente de novo em alguns instantes ou escolha outro modelo/provedor em Ajustes.",
   worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
 },
 worlds: {

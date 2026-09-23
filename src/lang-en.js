@@ -53,6 +53,7 @@ ui: {
   llmH: "AI tutor (bring your own key)", llmP: "Pick a provider and paste your API key. It stays in this browser only and is sent straight to the provider; the game has no server.",
   llmProvider: "Provider", llmKey: "API key", llmModel: "Model (optional)", llmUrl: "Endpoint URL", llmTest: "Test connection", llmForget: "Forget key",
   llmNote: "Caution: a key stored in the browser can be read by anyone with access to this machine. Prefer keys with a spending limit. Some providers block direct browser calls (CORS); in that case use OpenRouter or your own proxy.",
+  tutorRetry: "Try again", tutorThinking: "Thinking…", tutorBusy: "Provider busy, retrying ({n}/3)…", tutorFallback: "Model unavailable; trying the backup…", tutorOverload: "The provider is overloaded right now (not a problem with your key). Try again in a moment or pick another model/provider in Settings.",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {

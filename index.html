@@ -155,6 +155,7 @@ p{margin:0 0 .8em;text-align:justify}
 .msg{padding:9px 12px;border-radius:10px;font-size:.95rem;white-space:pre-wrap;max-width:92%;text-align:left}
 .msg.user{background:var(--sunken);justify-self:end} .msg.assistant{background:var(--gold-soft);justify-self:start}
 .tutor textarea{flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);resize:vertical}
+.msg.error{background:var(--bad-soft);border:1px solid var(--bad);justify-self:start}
 
 </style>
 </head>
@@ -713,9 +714,9 @@ SIMS.gridworld = { mount(el, api) {
    nada passa por servidor do jogo. Provedores OpenAI-compatíveis usam o mesmo formato de chat. */
 const LLM_KEY = "iawise-llm";
 const PROVIDERS = {
-  anthropic: { name: "Anthropic (Claude)", model: "claude-sonnet-4-5", url: "https://api.anthropic.com/v1/messages", kind: "anthropic" },
-  openai:    { name: "OpenAI (GPT)", model: "gpt-4o-mini", url: "https://api.openai.com/v1/chat/completions", kind: "openai" },
-  google:    { name: "Google (Gemini)", model: "gemini-2.0-flash", url: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent", kind: "google" },
+  anthropic: { name: "Anthropic (Claude)", model: "claude-sonnet-4-5", fallback: ["claude-haiku-4-5"], url: "https://api.anthropic.com/v1/messages", kind: "anthropic" },
+  openai:    { name: "OpenAI (GPT)", model: "gpt-4o-mini", fallback: ["gpt-4.1-mini"], url: "https://api.openai.com/v1/chat/completions", kind: "openai" },
+  google:    { name: "Google (Gemini)", model: "gemini-2.5-flash", fallback: ["gemini-2.5-flash-lite", "gemini-2.0-flash", "gemini-flash-latest"], url: "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent", kind: "google" },
   deepseek:  { name: "DeepSeek", model: "deepseek-chat", url: "https://api.deepseek.com/chat/completions", kind: "openai" },
   groq:      { name: "Groq (Llama, Meta)", model: "llama-3.3-70b-versatile", url: "https://api.groq.com/openai/v1/chat/completions", kind: "openai" },
   mistral:   { name: "Mistral", model: "mistral-small-latest", url: "https://api.mistral.ai/v1/chat/completions", kind: "openai" },
@@ -727,21 +728,36 @@ const LLM = {
   save(c) { try { localStorage.setItem(LLM_KEY, JSON.stringify(c)); } catch (e) { } },
   ready() { const c = LLM.cfg(); return !!c.key && (c.provider !== "custom" || !!c.url); },
   /* messages: [{role:"user"|"assistant", content}] ; devolve o texto da resposta */
-  async chat(system, messages) {
-    const c = LLM.cfg(), P = PROVIDERS[c.provider] || PROVIDERS.anthropic, model = c.model || P.model, url = c.provider === "custom" ? c.url : P.url;
+  /* Tenta o modelo escolhido com até 3 tentativas (espera 1,5 s e 4 s) quando o provedor está sobrecarregado;
+     se continuar indisponível, passa para os modelos reserva do mesmo provedor. onStatus informa a tela. */
+  async chat(system, messages, onStatus) {
+    const c = LLM.cfg(), P = PROVIDERS[c.provider] || PROVIDERS.anthropic, models = [c.model || P.model, ...(P.fallback || []).filter(m => m !== (c.model || P.model))];
+    let last;
+    for (const model of models) {
+      for (let a = 0; a < 3; a++) {
+        try { return await LLM.once(c, P, model, system, messages); }
+        catch (e) { last = e; if (!e.retry) { if (e.status === 404) break; throw e; } if (a < 2) { onStatus && onStatus({ wait: true, model, attempt: a + 2 }); await new Promise(r => setTimeout(r, a ? 4000 : 1500)); } }
+      }
+      onStatus && onStatus({ fallback: true, model });
+    }
+    throw last;
+  },
+  fail(r, data) { const msg = (data && data.error && (data.error.message || data.error)) || ("HTTP " + r.status), e = new Error(typeof msg === "string" ? msg : JSON.stringify(msg)); e.status = r.status; e.retry = [408, 429, 500, 502, 503, 504, 529].includes(r.status) || /overload|high demand|unavailable|try again/i.test(e.message); return e; },
+  async once(c, P, model, system, messages) {
+    const url = c.provider === "custom" ? c.url : P.url;
     let r, data;
     if (P.kind === "anthropic") {
       r = await fetch(url, { method: "POST", headers: { "content-type": "application/json", "x-api-key": c.key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model, max_tokens: 700, system, messages }) });
-      data = await r.json(); if (!r.ok) throw new Error(data.error && data.error.message || r.status);
+      data = await r.json().catch(() => ({})); if (!r.ok) throw LLM.fail(r, data);
       return data.content.filter(x => x.type === "text").map(x => x.text).join("\n");
     }
     if (P.kind === "google") {
       r = await fetch(url.replace("{model}", model) + "?key=" + encodeURIComponent(c.key), { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ system_instruction: { parts: [{ text: system }] }, contents: messages.map(m => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })), generationConfig: { maxOutputTokens: 700 } }) });
-      data = await r.json(); if (!r.ok) throw new Error(data.error && data.error.message || r.status);
+      data = await r.json().catch(() => ({})); if (!r.ok) throw LLM.fail(r, data);
       return data.candidates[0].content.parts.map(p => p.text).join("\n");
     }
     r = await fetch(url, { method: "POST", headers: { "content-type": "application/json", "authorization": "Bearer " + c.key }, body: JSON.stringify({ model, max_tokens: 700, messages: [{ role: "system", content: system }, ...messages] }) });
-    data = await r.json(); if (!r.ok) throw new Error(data.error && (data.error.message || data.error) || r.status);
+    data = await r.json().catch(() => ({})); if (!r.ok) throw LLM.fail(r, data);
     return data.choices[0].message.content;
   }
 };
@@ -801,6 +817,7 @@ ui: {
   llmH: "Tutor de IA (sua própria chave)", llmP: "Escolha um provedor e cole sua chave de API. Ela fica somente neste navegador e é enviada direto ao provedor; o jogo não tem servidor.",
   llmProvider: "Provedor", llmKey: "Chave de API", llmModel: "Modelo (opcional)", llmUrl: "URL do endpoint", llmTest: "Testar conexão", llmForget: "Esquecer chave",
   llmNote: "Atenção: uma chave guardada no navegador pode ser lida por quem tiver acesso à máquina. Prefira chaves com limite de gasto. Alguns provedores bloqueiam chamadas diretas do navegador (CORS); nesse caso, use OpenRouter ou um proxy próprio.",
+  tutorRetry: "Tentar de novo", tutorThinking: "Pensando…", tutorBusy: "Provedor ocupado, tentando de novo ({n}/3)…", tutorFallback: "Modelo indisponível; tentando o reserva…", tutorOverload: "O provedor está sobrecarregado agora (não é problema da sua chave). Tente de novo em alguns instantes ou escolha outro modelo/provedor em Ajustes.",
   worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
 },
 worlds: {
@@ -998,6 +1015,7 @@ ui: {
   llmH: "AI tutor (bring your own key)", llmP: "Pick a provider and paste your API key. It stays in this browser only and is sent straight to the provider; the game has no server.",
   llmProvider: "Provider", llmKey: "API key", llmModel: "Model (optional)", llmUrl: "Endpoint URL", llmTest: "Test connection", llmForget: "Forget key",
   llmNote: "Caution: a key stored in the browser can be read by anyone with access to this machine. Prefer keys with a spending limit. Some providers block direct browser calls (CORS); in that case use OpenRouter or your own proxy.",
+  tutorRetry: "Try again", tutorThinking: "Thinking…", tutorBusy: "Provider busy, retrying ({n}/3)…", tutorFallback: "Model unavailable; trying the backup…", tutorOverload: "The provider is overloaded right now (not a problem with your key). Try again in a moment or pick another model/provider in Settings.",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {
@@ -1304,15 +1322,18 @@ function tutorPanel(l) {
   const L = lsT(l.id), panel = el("div", { class: "tutor" }, el("h3", {}, "🤖 " + t("tutorH")));
   if (!LLM.ready()) { panel.append(el("p", { class: "empty" }, t("tutorOff")), el("button", { class: "btn small ghost", onclick: () => go("settings") }, t("navSettings"))); return panel; }
   const hist = chat[l.id] = chat[l.id] || [], log = el("div", { class: "chatlog" }), ta = el("textarea", { rows: 2, placeholder: t("tutorPh") }), busy = el("span", { class: "empty" });
-  const paint = () => { log.innerHTML = ""; hist.forEach(m => log.append(el("div", { class: "msg " + m.role }, m.content))); log.scrollTop = log.scrollHeight; };
+  const paint = () => { log.innerHTML = ""; hist.forEach((m, i) => log.append(el("div", { class: "msg " + m.role }, m.content, m.role === "error" && i === hist.length - 1 ? el("div", { class: "row", style: "margin-top:6px" }, btn(t("tutorRetry"), () => { const q = hist[i - 1]; hist.splice(i - 1, 2); ask(q.content, q.hint); }, "btn small")) : null))); log.scrollTop = log.scrollHeight; };
   async function ask(text, isHint) {
-    if (!text.trim()) return; ta.value = ""; hist.push({ role: "user", content: text }); paint(); busy.textContent = "…";
+    if (!text.trim() || busy.textContent) return; ta.value = ""; hist.push({ role: "user", content: text, hint: isHint }); paint(); busy.textContent = t("tutorThinking");
     if (isHint) TASKS[l.sim].forEach(tk => { if (!S.done[tk.id]) hintOn[tk.id] = true; });
     const state = sim && sim.state ? sim.state() : {};
     const tasks = TASKS[l.sim].map(tk => "- [" + (S.done[tk.id] ? "x" : " ") + "] " + L.tasks[tk.id].t).join("\n");
     const system = t("tutorSys", { lang: Lg().name, lesson: L.name, world: wT(l.world).name }) + "\n\n" + t("tutorTheory") + "\n" + L.theory.map(([h, p]) => h + ": " + p).join("\n") + "\n\n" + t("tutorTasks") + "\n" + tasks + "\n\n" + t("tutorState") + "\n" + JSON.stringify(state) + "\n\n" + t("tutorRules");
-    try { const out = await LLM.chat(system, hist.slice(-8).map(m => ({ role: m.role, content: m.content }))); hist.push({ role: "assistant", content: out }); }
-    catch (e) { hist.push({ role: "assistant", content: t("tutorErr") + " " + (e.message || e) }); }
+    /* só pares pergunta/resposta válidos vão para o modelo: erros e perguntas sem resposta ficam fora do histórico */
+    const clean = []; hist.forEach((m, i) => { if (m.role === "assistant" || (m.role === "user" && (i === hist.length - 1 || (hist[i + 1] && hist[i + 1].role === "assistant")))) clean.push({ role: m.role, content: m.content }); });
+    const onStatus = s => { busy.textContent = s.wait ? t("tutorBusy", { n: s.attempt }) : t("tutorFallback", { m: s.model }); };
+    try { const out = await LLM.chat(system, clean.slice(-8), onStatus); hist.push({ role: "assistant", content: out }); }
+    catch (e) { hist.push({ role: "error", content: (e.retry ? t("tutorOverload") : t("tutorErr")) + " (" + (e.message || e) + ")" }); }
     busy.textContent = ""; paint(); if (isHint) { const te = $.querySelector(".tasks"); if (te) paintTasks(l, te); }
   }
   panel.append(el("div", { class: "row" }, btn(t("tutorQ1"), () => ask(t("tutorQ1"), false), "btn small ghost"), btn(t("tutorQ2"), () => ask(t("tutorQ2"), false), "btn small ghost"), btn(t("tutorQ3"), () => ask(t("tutorQ3"), true), "btn small ghost")),

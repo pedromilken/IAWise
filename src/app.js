@@ -162,15 +162,18 @@ function tutorPanel(l) {
   const L = lsT(l.id), panel = el("div", { class: "tutor" }, el("h3", {}, "🤖 " + t("tutorH")));
   if (!LLM.ready()) { panel.append(el("p", { class: "empty" }, t("tutorOff")), el("button", { class: "btn small ghost", onclick: () => go("settings") }, t("navSettings"))); return panel; }
   const hist = chat[l.id] = chat[l.id] || [], log = el("div", { class: "chatlog" }), ta = el("textarea", { rows: 2, placeholder: t("tutorPh") }), busy = el("span", { class: "empty" });
-  const paint = () => { log.innerHTML = ""; hist.forEach(m => log.append(el("div", { class: "msg " + m.role }, m.content))); log.scrollTop = log.scrollHeight; };
+  const paint = () => { log.innerHTML = ""; hist.forEach((m, i) => log.append(el("div", { class: "msg " + m.role }, m.content, m.role === "error" && i === hist.length - 1 ? el("div", { class: "row", style: "margin-top:6px" }, btn(t("tutorRetry"), () => { const q = hist[i - 1]; hist.splice(i - 1, 2); ask(q.content, q.hint); }, "btn small")) : null))); log.scrollTop = log.scrollHeight; };
   async function ask(text, isHint) {
-    if (!text.trim()) return; ta.value = ""; hist.push({ role: "user", content: text }); paint(); busy.textContent = "…";
+    if (!text.trim() || busy.textContent) return; ta.value = ""; hist.push({ role: "user", content: text, hint: isHint }); paint(); busy.textContent = t("tutorThinking");
     if (isHint) TASKS[l.sim].forEach(tk => { if (!S.done[tk.id]) hintOn[tk.id] = true; });
     const state = sim && sim.state ? sim.state() : {};
     const tasks = TASKS[l.sim].map(tk => "- [" + (S.done[tk.id] ? "x" : " ") + "] " + L.tasks[tk.id].t).join("\n");
     const system = t("tutorSys", { lang: Lg().name, lesson: L.name, world: wT(l.world).name }) + "\n\n" + t("tutorTheory") + "\n" + L.theory.map(([h, p]) => h + ": " + p).join("\n") + "\n\n" + t("tutorTasks") + "\n" + tasks + "\n\n" + t("tutorState") + "\n" + JSON.stringify(state) + "\n\n" + t("tutorRules");
-    try { const out = await LLM.chat(system, hist.slice(-8).map(m => ({ role: m.role, content: m.content }))); hist.push({ role: "assistant", content: out }); }
-    catch (e) { hist.push({ role: "assistant", content: t("tutorErr") + " " + (e.message || e) }); }
+    /* só pares pergunta/resposta válidos vão para o modelo: erros e perguntas sem resposta ficam fora do histórico */
+    const clean = []; hist.forEach((m, i) => { if (m.role === "assistant" || (m.role === "user" && (i === hist.length - 1 || (hist[i + 1] && hist[i + 1].role === "assistant")))) clean.push({ role: m.role, content: m.content }); });
+    const onStatus = s => { busy.textContent = s.wait ? t("tutorBusy", { n: s.attempt }) : t("tutorFallback", { m: s.model }); };
+    try { const out = await LLM.chat(system, clean.slice(-8), onStatus); hist.push({ role: "assistant", content: out }); }
+    catch (e) { hist.push({ role: "error", content: (e.retry ? t("tutorOverload") : t("tutorErr")) + " (" + (e.message || e) + ")" }); }
     busy.textContent = ""; paint(); if (isHint) { const te = $.querySelector(".tasks"); if (te) paintTasks(l, te); }
   }
   panel.append(el("div", { class: "row" }, btn(t("tutorQ1"), () => ask(t("tutorQ1"), false), "btn small ghost"), btn(t("tutorQ2"), () => ask(t("tutorQ2"), false), "btn small ghost"), btn(t("tutorQ3"), () => ask(t("tutorQ3"), true), "btn small ghost")),

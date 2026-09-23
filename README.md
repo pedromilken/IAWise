@@ -32,6 +32,7 @@ As demais 21 fases já existem no mapa (nome, pré-requisito e portão de XP) e 
 ## Rastreamento e gamificação (herdados do DevWise)
 
 - **Elo/Rasch** pilota o jogo: domínio por fase, 60% libera a próxima, 85% domina, confirmação em outro dia. **TRI 3PL (EAP), BKT, PFA e AFM** rodam como sombras e registram no log a previsão feita antes de cada verificação (aba Relatório mostra Brier, AUC e acurácia).
+- **Prior hierárquico:** a primeira fase de cada mundo começa em 15%; cada fase seguinte começa em 0,5·15% + 0,5·(domínio da fase anterior), congelado na primeira resposta. Um Elo contrafactual com prior fixo roda em paralelo (`preds.elo_fixed` no log) para comparar as duas estratégias nas mesmas trajetórias; `?prior=fixo` na URL inverte o piloto. Cada linha do log registra `prior` e `priorMode`.
 - XP por tarefa (10/20/35 × multiplicador do modo), penalidade por verificação falha, sequência, recuperação, quatro modos de dificuldade, loja (escudo, XP em dobro, lente) e títulos.
 - Relatório imprimível e exportação do log no formato longo de datasets de KT.
 

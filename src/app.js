@@ -15,7 +15,15 @@ function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L
   return { v: 1, started: false, lang: guessLang(), skills, done: {}, failed: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0 }, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
 function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
-const trk = id => KT.ensure(S.skills[id]);
+/* Prior hierárquico: enquanto uma fase não tem nenhuma resposta, seu L0 = (1 − W)·L0_BASE + W·domínio atual do pré-requisito.
+   Na primeira resposta contada o prior é congelado (tr.prior). ?prior=fixo na URL volta ao L0 fixo (para experimento).
+   Em paralelo, tr.fix guarda um Elo com prior fixo (contrafactual), cujas previsões vão ao log como preds.elo_fixed. */
+const PRIOR = { v: "hier-1", base: L0, w: .5, mode: (() => { try { return new URLSearchParams(location.search).get("prior") === "fixo" ? "fixo" : "hier"; } catch (e) { return "hier"; } })() };
+function priorFor(id) { const pre = LS[id].pre; if (PRIOR.mode === "fixo" || !pre.length) return PRIOR.base; const m = Math.max(...pre.map(p => trk(p).L)); return (1 - PRIOR.w) * PRIOR.base + PRIOR.w * m; }
+function trk(id) { const tr = S.skills[id];
+  if (tr.n === 0 && tr.prior == null) { const p = priorFor(id); if (Math.abs(tr.L - p) > 1e-9) { tr.L = p; tr.m = null; } }
+  if (!tr.fix) tr.fix = { L: tr.prior != null && PRIOR.mode === "fixo" ? tr.prior : PRIOR.base };
+  KT.ensure(tr.fix); return KT.ensure(tr); }
 
 /* ---------- i18n ---------- */
 const Lg = () => LANG[S.lang] || LANG.pt;
@@ -46,10 +54,12 @@ function answer(item, ok, usedHint) {
   /* Só a PRIMEIRA verificação falha de cada tarefa vira evidência para o modelo: verificar de novo enquanto se ajusta o simulador
      é exploração, não desconhecimento. As demais falhas só custam XP e ficam no log com counted:0. */
   const counted = ok || !S.failed[item.id];
-  if (counted) { KT.updateAll(tr, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
+  if (counted && tr.prior == null) tr.prior = +tr.L.toFixed(4);
+  preds.elo_fixed = +Math.min(.999, Math.max(.001, KT.MODELS.elo.predict(tr.fix.m.elo, item, c))).toFixed(4);
+  if (counted) { KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
   if (!ok) S.failed[item.id] = (S.failed[item.id] || 0) + 1;
   if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
-  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
   msgs = [];
   const m = MODES[S.mode];
   if (ok) {
@@ -237,20 +247,35 @@ function shop() {
 /* --- relatório --- */
 function report() {
   const n = S.log.length, hits = S.log.filter(x => x.ok).length, mst = LESSONS.filter(l => mastered(l.id) && confirmed(l.id)).length;
+  const doneN = ITEMS.filter(i => S.done[i.id]).length, errN = S.log.filter(x => !x.ok).length;
   const sec = el("section", { class: "work rep" }, el("h2", {}, t("repH")), el("p", { class: "empty" }, t("repSub")), S.name ? el("p", {}, el("b", {}, t("repFor", { n: S.name }))) : null,
-    el("div", { class: "kpis" }, kpi(n, t("k1")), kpi(n ? pct(hits / n) : "–", t("k2")), kpi(mst, t("k3")), kpi(S.best, t("k4"))));
-  const byW = el("div", { class: "panel" }, el("h3", {}, t("bySkill")));
-  for (const w of WORLDS) { const ls = LESSONS.filter(l => l.world === w.id && built(l.id)), mst = ls.filter(l => mastered(l.id) && confirmed(l.id)).length, avg = ls.reduce((a, l) => a + trk(l.id).L, 0) / ls.length;
-    byW.append(el("div", { class: "whead small " + w.id }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h4", {}, wT(w.id).name + " · " + wT(w.id).course), el("span", { class: "empty" }, t("worldAvg", { p: pct(avg), m: mst, n: ls.length })))),
-      el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTries", "colHits", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...ls.map(l => { const tr = trk(l.id), [st] = status(l.id); return el("tr", {}, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)), el("td", {}, tr.n), el("td", {}, tr.c), el("td", {}, t(st))); }))))); }
-  sec.append(byW);
+    el("div", { class: "kpis" }, kpi(doneN + "/" + ITEMS.length, t("k5")), kpi(n, t("k1")), kpi(n ? pct(hits / n) : "–", t("k2")), kpi(errN, t("k6")), kpi(mst, t("k3")), kpi(S.best, t("k4"))));
+  const byW = el("div", { class: "panel" }, el("h3", {}, t("bySkill")), el("p", { class: "empty" }, t("repLegend")));
+  const pending = el("div", { class: "panel" }, el("h3", {}, t("pendH")));
+  for (const w of WORLDS) { const all = LESSONS.filter(l => l.world === w.id), ls = all.filter(l => built(l.id)), mstW = ls.filter(l => mastered(l.id) && confirmed(l.id)).length, avg = ls.reduce((a, l) => a + trk(l.id).L, 0) / (ls.length || 1);
+    const rows = all.map(l => {
+      const tr = trk(l.id), [st] = status(l.id), tasks = l.sim ? TASKS[l.sim] : [], done = tasks.filter(x => S.done[x.id]).length;
+      const fails = tasks.reduce((a, x) => a + (S.failed[x.id] || 0), 0), cErr = tr.n - tr.c, extra = Math.max(0, fails - cErr);
+      if (!built(l.id)) return el("tr", { class: "soonrow" }, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, t("soon")));
+      return el("tr", {}, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)),
+        el("td", {}, done + "/" + tasks.length), el("td", {}, tr.c), el("td", { class: cErr ? "errc" : "" }, cErr), el("td", {}, extra), el("td", {}, t(st)));
+    });
+    byW.append(el("div", { class: "whead small " + w.id }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h4", {}, wT(w.id).name + " · " + wT(w.id).course), el("span", { class: "empty" }, t("worldAvg", { p: pct(avg), m: mstW, n: ls.length }) + " · " + t("worldBuilt", { b: ls.length, n: all.length })))),
+      el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTasks", "colHits", "colErr", "colExtra", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...rows))));
+    /* o que falta fazer: tarefas pendentes das fases liberadas; fases bloqueadas aparecem resumidas */
+    const open = ls.filter(l => unlocked(l.id) && TASKS[l.sim].some(x => !S.done[x.id])), locked = ls.filter(l => !unlocked(l.id));
+    if (open.length || locked.length) { pending.append(el("h4", { class: "pendw" }, w.icon + " " + wT(w.id).course));
+      open.forEach(l => { const L = lsT(l.id); pending.append(el("p", { class: "pendl" }, el("b", {}, l.n + ". " + L.name)), el("ul", { class: "pend" }, ...TASKS[l.sim].filter(x => !S.done[x.id]).map(x => el("li", {}, "★".repeat(x.d) + " " + L.tasks[x.id].t + (S.failed[x.id] ? " — " + t("pendFails", { n: S.failed[x.id] }) : ""))))); });
+      if (locked.length) pending.append(el("p", { class: "empty" }, t("pendLocked", { s: locked.map(l => l.n + ". " + lsT(l.id).name).join(", ") }))); } }
+  if (!pending.querySelector("h4")) pending.append(el("p", { class: "feedback ok" }, t("pendNone")));
+  sec.append(byW, pending);
   const recs = el("div", { class: "panel" }, el("h3", {}, t("recs")));
   if (!n) recs.append(el("p", { class: "empty" }, t("recNone")));
   else { const cand = LESSONS.filter(l => built(l.id) && unlocked(l.id) && !mastered(l.id)).sort((a, b) => trk(a.id).L - trk(b.id).L)[0]; if (cand) recs.append(el("p", {}, t("recPriority", { s: lsT(cand.id).name, p: pct(trk(cand.id).L), c: trk(cand.id).c, n: trk(cand.id).n })));
     const lk = LESSONS.filter(l => built(l.id) && !unlocked(l.id)).map(l => lsT(l.id).name); if (lk.length) recs.append(el("p", { class: "empty" }, t("recLocked", { s: lk.join(", ") }))); }
   sec.append(recs);
-  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP") + " " + t("cmpNote")), el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...KT.IDS.map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); })))));
-  sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }))));
+  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP") + " " + t("cmpNote")), el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...[...KT.IDS, "elo_fixed"].map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); })))));
+  sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }) + " " + t(PRIOR.mode === "hier" ? "howPrior" : "howPriorFix", { b: pct(PRIOR.base), w: pct(PRIOR.w) }))));
   const data = el("div", { class: "panel noprint" }, el("h3", {}, t("dataH")), el("p", { class: "empty" }, t("dataP")), el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => window.print() }, "🖨 " + t("printBtn")), el("button", { class: "btn small ghost", onclick: () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.log, null, 1)], { type: "application/json" })); a.download = "iawise-log.json"; a.click(); } }, t("download")), el("button", { class: "btn small ghost", onclick: () => { showJson = !showJson; render(); } }, showJson ? t("hideJson") : t("showJson"))), showJson ? el("pre", { class: "json" }, JSON.stringify(S.log.slice(-40), null, 1)) : null);
   sec.append(data, el("p", { class: "empty printonly" }, t("printedOn", { d: new Date().toLocaleDateString() })));
   return sec;

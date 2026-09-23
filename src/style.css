@@ -147,3 +147,6 @@ p{margin:0 0 .8em;text-align:justify}
 .msg.user{background:var(--sunken);justify-self:end} .msg.assistant{background:var(--gold-soft);justify-self:start}
 .tutor textarea{flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);resize:vertical}
 .msg.error{background:var(--bad-soft);border:1px solid var(--bad);justify-self:start}
+.soonrow td{color:var(--muted)} .errc{color:var(--bad);font-weight:700}
+.pendw{margin:12px 0 4px;font-size:1.02rem} .pendl{margin:6px 0 2px} .pend{margin:0 0 6px;padding-left:20px;font-size:.93rem} .pend li{margin:3px 0}
+@media print{.tblwrap{overflow:visible}.panel{break-inside:avoid-page}}

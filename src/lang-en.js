@@ -32,12 +32,12 @@ ui: {
   modeDesc: { normal: "XP ×1. Free hints (with a hint, a hit is worth half). Each failed verification costs 2 XP per task level.", medio: "XP ×1.5. Free hints. Each failed verification costs 4 XP per level.", dificil: "XP ×2. No hints. Each failed verification costs 6 XP per level.", hardcore: "XP ×3. No hints. Each failed verification costs 10 XP per level." },
   shopH: "Shop", shopP: "Trade XP balance for powers and titles. Spending balance does not reduce lifetime XP, which is what unlocks stages.", powers: "Powers", titlesH: "Titles", buy: "Trade for {c} XP", need: "{n} XP short (costs {c})", owned: "You have: {n}", equip: "Use this title", equipped: "In use", unequip: "Stop using",
   repH: "Learning report", repSub: "For the student and whoever supports them: what is mastered, where the misses are and what to practise next.", repFor: "Student: {n}", printedOn: "Generated on {d}",
-  k1: "tasks verified", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
+  k1: "checks made", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
   bySkill: "Mastery by stage", colSkill: "Stage", colMastery: "Mastery", colTries: "Checks", colHits: "Hits", colStatus: "Status",
   recs: "Tutor recommendations", recNone: "No answers yet. Verify a few tasks so the tutor has evidence.", recPriority: "Priority: {s} ({p} mastery, {c} hits out of {n}).", recLocked: "Still locked: {s}. They open when the prerequisites pass 60%.",
   how: "How mastery is computed", howP: "The tutor uses the Elo/Rasch model: each stage has a mastery score and each task a difficulty on the same scale. The gap gives the probability of a hit; after each check the score moves up or down in proportion to the surprise. A stage counts as mastered from {m}. BKT, PFA, AFM and 3PL IRT run in the background and only record their predictions for comparison.",
   cmpH: "Model comparison on this trajectory", cmpP: "Before each check the five models record the hit probability they predicted. Brier measures prediction error (lower is better); AUC measures whether the model separates hits from misses (0.5 is chance, 1 is perfect).", colModel: "Model", colAcc: "Accuracy", noData: "no data",
-  models: { elo: "Elo/Rasch", irt: "3PL IRT with EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  models: { elo: "Elo/Rasch", irt: "3PL IRT with EAP", bkt: "BKT", pfa: "PFA", afm: "AFM", elo_fixed: "Elo/Rasch with fixed prior (counterfactual)" },
   printBtn: "Print or save as PDF", download: "Download JSON", showJson: "Show JSON log", hideJson: "Hide JSON log",
   dataH: "Your data", dataP: "Progress lives only in this browser. The log follows the long format of knowledge-tracing datasets (item, skill, correct, language, timestamp).",
   setH: "Settings", uiLang: "Game language", studentName: "Student name (optional, shown on the printed report)", confirmRule: "Require mastery to be confirmed by a hit on another day", theme: "Theme", themeAuto: "Automatic", themeLight: "Light", themeDark: "Dark",
@@ -54,6 +54,8 @@ ui: {
   llmProvider: "Provider", llmKey: "API key", llmModel: "Model (optional)", llmUrl: "Endpoint URL", llmTest: "Test connection", llmForget: "Forget key",
   llmNote: "Caution: a key stored in the browser can be read by anyone with access to this machine. Prefer keys with a spending limit. Some providers block direct browser calls (CORS); in that case use OpenRouter or your own proxy.",
   tutorRetry: "Try again", tutorThinking: "Thinking…", tutorBusy: "Provider busy, retrying ({n}/3)…", tutorFallback: "Model unavailable; trying the backup…", tutorOverload: "The provider is overloaded right now (not a problem with your key). Try again in a moment or pick another model/provider in Settings.",
+  howPrior: "Starting point: the first stage of each world starts at {b}; each following stage starts at the average of {b} and the current mastery of the previous stage (weight {w}), frozen at the first answer. Whoever masters the perceptron enters stage 2 with more credit.", howPriorFix: "Starting point: every stage starts at {b} (fixed prior, experiment mode).",
+  k5: "tasks completed", k6: "failed checks", colTasks: "Tasks", colErr: "Errors", colExtra: "Extra attempts", repLegend: "Hits and errors feed the model (only the first failure of each task). Extra attempts are repeated failed checks: they cost XP but do not lower mastery.", worldBuilt: "{b} of {n} stages with a simulator", pendH: "What is left to do", pendFails: "{n} failed attempt(s)", pendLocked: "Still locked: {s}.", pendNone: "No pending tasks in the available stages.",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {

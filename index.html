@@ -156,6 +156,9 @@ p{margin:0 0 .8em;text-align:justify}
 .msg.user{background:var(--sunken);justify-self:end} .msg.assistant{background:var(--gold-soft);justify-self:start}
 .tutor textarea{flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);resize:vertical}
 .msg.error{background:var(--bad-soft);border:1px solid var(--bad);justify-self:start}
+.soonrow td{color:var(--muted)} .errc{color:var(--bad);font-weight:700}
+.pendw{margin:12px 0 4px;font-size:1.02rem} .pendl{margin:6px 0 2px} .pend{margin:0 0 6px;padding-left:20px;font-size:.93rem} .pend li{margin:3px 0}
+@media print{.tblwrap{overflow:visible}.panel{break-inside:avoid-page}}
 
 </style>
 </head>
@@ -796,12 +799,12 @@ ui: {
   modeDesc: { normal: "XP ×1. Dicas grátis (com dica, o acerto vale metade). Cada verificação falha custa 2 XP por nível da tarefa.", medio: "XP ×1,5. Dicas grátis. Cada verificação falha custa 4 XP por nível.", dificil: "XP ×2. Sem dicas. Cada verificação falha custa 6 XP por nível.", hardcore: "XP ×3. Sem dicas. Cada verificação falha custa 10 XP por nível." },
   shopH: "Loja", shopP: "Troque saldo de XP por poderes e títulos. Gastar saldo não reduz o XP acumulado, que é o que libera as fases.", powers: "Poderes", titlesH: "Títulos", buy: "Trocar por {c} XP", need: "Faltam {n} XP (custa {c})", owned: "Você tem: {n}", equip: "Usar este título", equipped: "Em uso", unequip: "Parar de usar",
   repH: "Relatório de aprendizagem", repSub: "Para o estudante e para quem o acompanha: o que já está dominado, onde estão os erros e o que praticar depois.", repFor: "Estudante: {n}", printedOn: "Gerado em {d}",
-  k1: "tarefas verificadas", k2: "acerto", k3: "fases dominadas", k4: "maior sequência",
+  k1: "verificações feitas", k2: "acerto", k3: "fases dominadas", k4: "maior sequência",
   bySkill: "Domínio por fase", colSkill: "Fase", colMastery: "Domínio", colTries: "Verificações", colHits: "Acertos", colStatus: "Status",
   recs: "Recomendações do tutor", recNone: "Ainda não há respostas. Verifique algumas tarefas para o tutor ter evidência.", recPriority: "Prioridade: {s} ({p} de domínio, {c} acertos em {n}).", recLocked: "Ainda bloqueadas: {s}. Abrem quando os pré-requisitos passarem de 60%.",
   how: "Como o domínio é calculado", howP: "O tutor usa o modelo Elo/Rasch: cada fase tem uma pontuação de domínio e cada tarefa tem uma dificuldade na mesma escala. A distância entre elas dá a probabilidade de acerto; após cada verificação, a pontuação sobe ou desce proporcionalmente à surpresa. Uma fase conta como dominada a partir de {m}. Os modelos BKT, PFA, AFM e TRI 3PL rodam em segundo plano e só registram suas previsões para comparação.",
   cmpH: "Comparação de modelos nesta trajetória", cmpP: "Antes de cada verificação, os cinco modelos registram a probabilidade de acerto que previam. Brier mede o erro da previsão (menor é melhor); AUC mede se o modelo separa acertos de erros (0,5 é acaso, 1 é perfeito).", colModel: "Modelo", colAcc: "Acurácia", noData: "sem dados",
-  models: { elo: "Elo/Rasch", irt: "TRI 3PL com EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  models: { elo: "Elo/Rasch", irt: "TRI 3PL com EAP", bkt: "BKT", pfa: "PFA", afm: "AFM", elo_fixed: "Elo/Rasch com prior fixo (contrafactual)" },
   printBtn: "Imprimir ou salvar em PDF", download: "Baixar JSON", showJson: "Mostrar registro JSON", hideJson: "Ocultar registro JSON",
   dataH: "Seus dados", dataP: "O progresso fica somente neste navegador. O registro segue o formato longo dos datasets de knowledge tracing (item, habilidade, acerto, idioma, timestamp).",
   setH: "Ajustes", uiLang: "Idioma do jogo", studentName: "Nome do estudante (opcional, aparece no relatório impresso)", confirmRule: "Exigir que o domínio seja confirmado com um acerto em outro dia", theme: "Tema", themeAuto: "Automático", themeLight: "Claro", themeDark: "Escuro",
@@ -818,6 +821,8 @@ ui: {
   llmProvider: "Provedor", llmKey: "Chave de API", llmModel: "Modelo (opcional)", llmUrl: "URL do endpoint", llmTest: "Testar conexão", llmForget: "Esquecer chave",
   llmNote: "Atenção: uma chave guardada no navegador pode ser lida por quem tiver acesso à máquina. Prefira chaves com limite de gasto. Alguns provedores bloqueiam chamadas diretas do navegador (CORS); nesse caso, use OpenRouter ou um proxy próprio.",
   tutorRetry: "Tentar de novo", tutorThinking: "Pensando…", tutorBusy: "Provedor ocupado, tentando de novo ({n}/3)…", tutorFallback: "Modelo indisponível; tentando o reserva…", tutorOverload: "O provedor está sobrecarregado agora (não é problema da sua chave). Tente de novo em alguns instantes ou escolha outro modelo/provedor em Ajustes.",
+  howPrior: "Ponto de partida: a primeira fase de cada mundo começa em {b}; cada fase seguinte começa na média entre {b} e o domínio atual da fase anterior (peso {w}), congelada na primeira resposta. Quem domina o perceptron entra na fase 2 com mais crédito.", howPriorFix: "Ponto de partida: todas as fases começam em {b} (prior fixo, modo de experimento).",
+  k5: "tarefas concluídas", k6: "verificações falhas", colTasks: "Tarefas", colErr: "Erros", colExtra: "Tentativas extras", repLegend: "Acertos e erros contam para o modelo (só a primeira falha de cada tarefa). Tentativas extras são verificações falhas repetidas: custam XP, mas não baixam o domínio.", worldBuilt: "{b} de {n} fases com simulador", pendH: "O que falta fazer", pendFails: "{n} tentativa(s) falha(s)", pendLocked: "Ainda bloqueadas: {s}.", pendNone: "Nenhuma tarefa pendente nas fases disponíveis.",
   worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
 },
 worlds: {
@@ -994,12 +999,12 @@ ui: {
   modeDesc: { normal: "XP ×1. Free hints (with a hint, a hit is worth half). Each failed verification costs 2 XP per task level.", medio: "XP ×1.5. Free hints. Each failed verification costs 4 XP per level.", dificil: "XP ×2. No hints. Each failed verification costs 6 XP per level.", hardcore: "XP ×3. No hints. Each failed verification costs 10 XP per level." },
   shopH: "Shop", shopP: "Trade XP balance for powers and titles. Spending balance does not reduce lifetime XP, which is what unlocks stages.", powers: "Powers", titlesH: "Titles", buy: "Trade for {c} XP", need: "{n} XP short (costs {c})", owned: "You have: {n}", equip: "Use this title", equipped: "In use", unequip: "Stop using",
   repH: "Learning report", repSub: "For the student and whoever supports them: what is mastered, where the misses are and what to practise next.", repFor: "Student: {n}", printedOn: "Generated on {d}",
-  k1: "tasks verified", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
+  k1: "checks made", k2: "accuracy", k3: "stages mastered", k4: "longest streak",
   bySkill: "Mastery by stage", colSkill: "Stage", colMastery: "Mastery", colTries: "Checks", colHits: "Hits", colStatus: "Status",
   recs: "Tutor recommendations", recNone: "No answers yet. Verify a few tasks so the tutor has evidence.", recPriority: "Priority: {s} ({p} mastery, {c} hits out of {n}).", recLocked: "Still locked: {s}. They open when the prerequisites pass 60%.",
   how: "How mastery is computed", howP: "The tutor uses the Elo/Rasch model: each stage has a mastery score and each task a difficulty on the same scale. The gap gives the probability of a hit; after each check the score moves up or down in proportion to the surprise. A stage counts as mastered from {m}. BKT, PFA, AFM and 3PL IRT run in the background and only record their predictions for comparison.",
   cmpH: "Model comparison on this trajectory", cmpP: "Before each check the five models record the hit probability they predicted. Brier measures prediction error (lower is better); AUC measures whether the model separates hits from misses (0.5 is chance, 1 is perfect).", colModel: "Model", colAcc: "Accuracy", noData: "no data",
-  models: { elo: "Elo/Rasch", irt: "3PL IRT with EAP", bkt: "BKT", pfa: "PFA", afm: "AFM" },
+  models: { elo: "Elo/Rasch", irt: "3PL IRT with EAP", bkt: "BKT", pfa: "PFA", afm: "AFM", elo_fixed: "Elo/Rasch with fixed prior (counterfactual)" },
   printBtn: "Print or save as PDF", download: "Download JSON", showJson: "Show JSON log", hideJson: "Hide JSON log",
   dataH: "Your data", dataP: "Progress lives only in this browser. The log follows the long format of knowledge-tracing datasets (item, skill, correct, language, timestamp).",
   setH: "Settings", uiLang: "Game language", studentName: "Student name (optional, shown on the printed report)", confirmRule: "Require mastery to be confirmed by a hit on another day", theme: "Theme", themeAuto: "Automatic", themeLight: "Light", themeDark: "Dark",
@@ -1016,6 +1021,8 @@ ui: {
   llmProvider: "Provider", llmKey: "API key", llmModel: "Model (optional)", llmUrl: "Endpoint URL", llmTest: "Test connection", llmForget: "Forget key",
   llmNote: "Caution: a key stored in the browser can be read by anyone with access to this machine. Prefer keys with a spending limit. Some providers block direct browser calls (CORS); in that case use OpenRouter or your own proxy.",
   tutorRetry: "Try again", tutorThinking: "Thinking…", tutorBusy: "Provider busy, retrying ({n}/3)…", tutorFallback: "Model unavailable; trying the backup…", tutorOverload: "The provider is overloaded right now (not a problem with your key). Try again in a moment or pick another model/provider in Settings.",
+  howPrior: "Starting point: the first stage of each world starts at {b}; each following stage starts at the average of {b} and the current mastery of the previous stage (weight {w}), frozen at the first answer. Whoever masters the perceptron enters stage 2 with more credit.", howPriorFix: "Starting point: every stage starts at {b} (fixed prior, experiment mode).",
+  k5: "tasks completed", k6: "failed checks", colTasks: "Tasks", colErr: "Errors", colExtra: "Extra attempts", repLegend: "Hits and errors feed the model (only the first failure of each task). Extra attempts are repeated failed checks: they cost XP but do not lower mastery.", worldBuilt: "{b} of {n} stages with a simulator", pendH: "What is left to do", pendFails: "{n} failed attempt(s)", pendLocked: "Still locked: {s}.", pendNone: "No pending tasks in the available stages.",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {
@@ -1175,7 +1182,15 @@ function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L
   return { v: 1, started: false, lang: guessLang(), skills, done: {}, failed: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0 }, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
 function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
-const trk = id => KT.ensure(S.skills[id]);
+/* Prior hierárquico: enquanto uma fase não tem nenhuma resposta, seu L0 = (1 − W)·L0_BASE + W·domínio atual do pré-requisito.
+   Na primeira resposta contada o prior é congelado (tr.prior). ?prior=fixo na URL volta ao L0 fixo (para experimento).
+   Em paralelo, tr.fix guarda um Elo com prior fixo (contrafactual), cujas previsões vão ao log como preds.elo_fixed. */
+const PRIOR = { v: "hier-1", base: L0, w: .5, mode: (() => { try { return new URLSearchParams(location.search).get("prior") === "fixo" ? "fixo" : "hier"; } catch (e) { return "hier"; } })() };
+function priorFor(id) { const pre = LS[id].pre; if (PRIOR.mode === "fixo" || !pre.length) return PRIOR.base; const m = Math.max(...pre.map(p => trk(p).L)); return (1 - PRIOR.w) * PRIOR.base + PRIOR.w * m; }
+function trk(id) { const tr = S.skills[id];
+  if (tr.n === 0 && tr.prior == null) { const p = priorFor(id); if (Math.abs(tr.L - p) > 1e-9) { tr.L = p; tr.m = null; } }
+  if (!tr.fix) tr.fix = { L: tr.prior != null && PRIOR.mode === "fixo" ? tr.prior : PRIOR.base };
+  KT.ensure(tr.fix); return KT.ensure(tr); }
 
 /* ---------- i18n ---------- */
 const Lg = () => LANG[S.lang] || LANG.pt;
@@ -1206,10 +1221,12 @@ function answer(item, ok, usedHint) {
   /* Só a PRIMEIRA verificação falha de cada tarefa vira evidência para o modelo: verificar de novo enquanto se ajusta o simulador
      é exploração, não desconhecimento. As demais falhas só custam XP e ficam no log com counted:0. */
   const counted = ok || !S.failed[item.id];
-  if (counted) { KT.updateAll(tr, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
+  if (counted && tr.prior == null) tr.prior = +tr.L.toFixed(4);
+  preds.elo_fixed = +Math.min(.999, Math.max(.001, KT.MODELS.elo.predict(tr.fix.m.elo, item, c))).toFixed(4);
+  if (counted) { KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
   if (!ok) S.failed[item.id] = (S.failed[item.id] || 0) + 1;
   if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
-  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
   msgs = [];
   const m = MODES[S.mode];
   if (ok) {
@@ -1397,20 +1414,35 @@ function shop() {
 /* --- relatório --- */
 function report() {
   const n = S.log.length, hits = S.log.filter(x => x.ok).length, mst = LESSONS.filter(l => mastered(l.id) && confirmed(l.id)).length;
+  const doneN = ITEMS.filter(i => S.done[i.id]).length, errN = S.log.filter(x => !x.ok).length;
   const sec = el("section", { class: "work rep" }, el("h2", {}, t("repH")), el("p", { class: "empty" }, t("repSub")), S.name ? el("p", {}, el("b", {}, t("repFor", { n: S.name }))) : null,
-    el("div", { class: "kpis" }, kpi(n, t("k1")), kpi(n ? pct(hits / n) : "–", t("k2")), kpi(mst, t("k3")), kpi(S.best, t("k4"))));
-  const byW = el("div", { class: "panel" }, el("h3", {}, t("bySkill")));
-  for (const w of WORLDS) { const ls = LESSONS.filter(l => l.world === w.id && built(l.id)), mst = ls.filter(l => mastered(l.id) && confirmed(l.id)).length, avg = ls.reduce((a, l) => a + trk(l.id).L, 0) / ls.length;
-    byW.append(el("div", { class: "whead small " + w.id }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h4", {}, wT(w.id).name + " · " + wT(w.id).course), el("span", { class: "empty" }, t("worldAvg", { p: pct(avg), m: mst, n: ls.length })))),
-      el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTries", "colHits", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...ls.map(l => { const tr = trk(l.id), [st] = status(l.id); return el("tr", {}, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)), el("td", {}, tr.n), el("td", {}, tr.c), el("td", {}, t(st))); }))))); }
-  sec.append(byW);
+    el("div", { class: "kpis" }, kpi(doneN + "/" + ITEMS.length, t("k5")), kpi(n, t("k1")), kpi(n ? pct(hits / n) : "–", t("k2")), kpi(errN, t("k6")), kpi(mst, t("k3")), kpi(S.best, t("k4"))));
+  const byW = el("div", { class: "panel" }, el("h3", {}, t("bySkill")), el("p", { class: "empty" }, t("repLegend")));
+  const pending = el("div", { class: "panel" }, el("h3", {}, t("pendH")));
+  for (const w of WORLDS) { const all = LESSONS.filter(l => l.world === w.id), ls = all.filter(l => built(l.id)), mstW = ls.filter(l => mastered(l.id) && confirmed(l.id)).length, avg = ls.reduce((a, l) => a + trk(l.id).L, 0) / (ls.length || 1);
+    const rows = all.map(l => {
+      const tr = trk(l.id), [st] = status(l.id), tasks = l.sim ? TASKS[l.sim] : [], done = tasks.filter(x => S.done[x.id]).length;
+      const fails = tasks.reduce((a, x) => a + (S.failed[x.id] || 0), 0), cErr = tr.n - tr.c, extra = Math.max(0, fails - cErr);
+      if (!built(l.id)) return el("tr", { class: "soonrow" }, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, "–"), el("td", {}, t("soon")));
+      return el("tr", {}, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)),
+        el("td", {}, done + "/" + tasks.length), el("td", {}, tr.c), el("td", { class: cErr ? "errc" : "" }, cErr), el("td", {}, extra), el("td", {}, t(st)));
+    });
+    byW.append(el("div", { class: "whead small " + w.id }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h4", {}, wT(w.id).name + " · " + wT(w.id).course), el("span", { class: "empty" }, t("worldAvg", { p: pct(avg), m: mstW, n: ls.length }) + " · " + t("worldBuilt", { b: ls.length, n: all.length })))),
+      el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTasks", "colHits", "colErr", "colExtra", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...rows))));
+    /* o que falta fazer: tarefas pendentes das fases liberadas; fases bloqueadas aparecem resumidas */
+    const open = ls.filter(l => unlocked(l.id) && TASKS[l.sim].some(x => !S.done[x.id])), locked = ls.filter(l => !unlocked(l.id));
+    if (open.length || locked.length) { pending.append(el("h4", { class: "pendw" }, w.icon + " " + wT(w.id).course));
+      open.forEach(l => { const L = lsT(l.id); pending.append(el("p", { class: "pendl" }, el("b", {}, l.n + ". " + L.name)), el("ul", { class: "pend" }, ...TASKS[l.sim].filter(x => !S.done[x.id]).map(x => el("li", {}, "★".repeat(x.d) + " " + L.tasks[x.id].t + (S.failed[x.id] ? " — " + t("pendFails", { n: S.failed[x.id] }) : ""))))); });
+      if (locked.length) pending.append(el("p", { class: "empty" }, t("pendLocked", { s: locked.map(l => l.n + ". " + lsT(l.id).name).join(", ") }))); } }
+  if (!pending.querySelector("h4")) pending.append(el("p", { class: "feedback ok" }, t("pendNone")));
+  sec.append(byW, pending);
   const recs = el("div", { class: "panel" }, el("h3", {}, t("recs")));
   if (!n) recs.append(el("p", { class: "empty" }, t("recNone")));
   else { const cand = LESSONS.filter(l => built(l.id) && unlocked(l.id) && !mastered(l.id)).sort((a, b) => trk(a.id).L - trk(b.id).L)[0]; if (cand) recs.append(el("p", {}, t("recPriority", { s: lsT(cand.id).name, p: pct(trk(cand.id).L), c: trk(cand.id).c, n: trk(cand.id).n })));
     const lk = LESSONS.filter(l => built(l.id) && !unlocked(l.id)).map(l => lsT(l.id).name); if (lk.length) recs.append(el("p", { class: "empty" }, t("recLocked", { s: lk.join(", ") }))); }
   sec.append(recs);
-  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP") + " " + t("cmpNote")), el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...KT.IDS.map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); })))));
-  sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }))));
+  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP") + " " + t("cmpNote")), el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...[...KT.IDS, "elo_fixed"].map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); })))));
+  sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }) + " " + t(PRIOR.mode === "hier" ? "howPrior" : "howPriorFix", { b: pct(PRIOR.base), w: pct(PRIOR.w) }))));
   const data = el("div", { class: "panel noprint" }, el("h3", {}, t("dataH")), el("p", { class: "empty" }, t("dataP")), el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => window.print() }, "🖨 " + t("printBtn")), el("button", { class: "btn small ghost", onclick: () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.log, null, 1)], { type: "application/json" })); a.download = "iawise-log.json"; a.click(); } }, t("download")), el("button", { class: "btn small ghost", onclick: () => { showJson = !showJson; render(); } }, showJson ? t("hideJson") : t("showJson"))), showJson ? el("pre", { class: "json" }, JSON.stringify(S.log.slice(-40), null, 1)) : null);
   sec.append(data, el("p", { class: "empty printonly" }, t("printedOn", { d: new Date().toLocaleDateString() })));
   return sec;

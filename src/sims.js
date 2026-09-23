@@ -85,6 +85,7 @@ SIMS.perceptron = { mount(el, api) {
       if (id === "p3") return (st.ds === "and" || st.ds === "or") && a === 0;
       if (id === "p4") return st.ds === "xor" && st.steps >= 40 && st.best <= .75;
       return false; },
+    state() { return { dataset: st.ds, w1: +fmt2(st.w1), w2: +fmt2(st.w2), b: +fmt2(st.b), lr: st.lr, accuracy: acc(), trainingSteps: st.steps, bestAccuracy: st.best, slidersTouchedSinceReset: st.manual }; },
     destroy() {}
   };
 } };
@@ -131,7 +132,7 @@ SIMS.represent = { mount(el, api) {
     if (id === "r2") return st.tg === "bump" && st.act === "relu" && st.Hn === 1 && st.steps >= 300 && st.mse > .01;
     if (id === "r3") return st.tg === "sin" && st.mse < .02;
     if (id === "r4") return st.tg === "bump" && st.act === "relu" && st.mse < .006;
-    return false; }, destroy() {} };
+    return false; }, state() { return { target: st.tg, activation: st.act, hiddenUnits: st.Hn, trainingSteps: st.steps, mse: +fmt3(st.mse) }; }, destroy() {} };
 } };
 
 /* =====================================================================
@@ -177,7 +178,7 @@ SIMS.gradient = { mount(el, api) {
     if (id === "g2") return !st.manual && st.steps >= 1 && st.steps <= 15 && lv < Lmin + .02;
     if (id === "g3") return st.up >= 3;
     if (id === "g4") return !st.manual && st.steps === 1 && lv < Lmin + .0005;
-    return false; }, destroy() {} };
+    return false; }, state() { return { w: +fmt2(st.w), lr: st.lr, loss: +fmt3(L(st.w)), gradient: +fmt2(dL(st.w)), minPossibleLoss: +fmt3(Lmin), gradientStepsSinceReset: st.steps, sliderTouchedSinceReset: st.manual, consecutiveLossIncreases: st.up }; }, destroy() {} };
 } };
 
 /* =====================================================================
@@ -216,7 +217,7 @@ SIMS.backprop = { mount(el, api) {
     if (id === "b2") return near(st.ans.dw2, v.dw2);
     if (id === "b3") return st.sc === "A" && near(st.ans.dw1, v.dw1) && near(st.ans.dh, v.dh);
     if (id === "b4") return st.sc === "B" && near(st.ans.dw1, 0) && near(st.ans.dw2, v.dw2);
-    return false; }, destroy() {} };
+    return false; }, state() { const v = calc(); return { scenario: st.sc, forward: { x: v.x, y: v.y, w1: v.w1, b1: v.b1, w2: v.w2, b2: v.b2, z: +fmt2(v.z), h: +fmt2(v.h), yhat: +fmt2(v.yh), loss: +fmt3(v.L) }, studentAnswers: st.ans }; }, destroy() {} };
 } };
 
 /* =====================================================================
@@ -261,7 +262,7 @@ SIMS.optimizers = { mount(el, api) {
     if (id === "o2") return st.surf === "bowl" && st.steps >= 50 && loss("sgd") > 1e3 && loss("adam") < .5;
     if (id === "o3") return st.surf === "valley" && st.steps >= 200 && loss("mom") < loss("sgd") && loss("mom") < 1;
     if (id === "o4") return st.surf === "valley" && st.steps <= 600 && loss("adam") < .01;
-    return false; }, destroy() {} };
+    return false; }, state() { const f = v => v > 1e6 ? "diverged" : +fmt3(v); return { surface: st.surf, lr: st.lr, momentumBeta: st.beta, steps: st.steps, loss: { sgd: f(loss("sgd")), momentum: f(loss("mom")), adam: f(loss("adam")) } }; }, destroy() {} };
 } };
 
 /* =====================================================================
@@ -299,7 +300,7 @@ SIMS.rover = { mount(el, api) {
     if (id === "m2") return Math.abs(st.gamma - .5) < .06 && sameOpt() && st.pol[1] === "L" && st.pol[2] === "R";
     if (id === "m3") return st.gamma >= .9 && sameOpt() && st.pol.slice(1, -1).every(a => a === "R");
     if (id === "m4") return sameOpt() && st.pol[1] === "L" && st.pol[2] === "L" && st.pol[3] === "R";
-    return false; }, destroy() {} };
+    return false; }, state() { const V = evalPol(st.pol); return { gamma: st.gamma, slip: st.slip, policy_s2_to_s6: st.pol.slice(1, -1).join(""), V_pi: V.slice(1, -1).map(v => +fmt3(v)), policyIsOptimal: sameOpt() }; }, destroy() {} };
 } };
 
 /* =====================================================================
@@ -342,5 +343,5 @@ SIMS.gridworld = { mount(el, api) {
     if (id === "w2") return st.converged && Math.abs(st.slip - .2) < .01 && Math.abs(st.live + .04) < .005 && greedy(2, 3) === "L";
     if (id === "w3") return st.converged && Math.abs(st.slip - .2) < .01 && greedy(2, 3) === "U" && st.live < -.08;
     if (id === "w4") return st.converged && st.slip === 0 && st.gamma >= .995 && Math.abs(st.live + .04) < .005 && Math.abs(st.V[2][0] - .8) < .002;
-    return false; }, destroy() {} };
+    return false; }, state() { return { gamma: st.gamma, slip: st.slip, rewardPerStep: st.live, sweeps: st.sweeps, delta: +st.delta.toExponential(2), converged: st.converged, V: st.V.map(r => r.map(v => +fmt2(v))), greedyPolicy: st.V.map((row, r) => row.map((_, c) => isT(r, c) ? "T" : isW(r, c) ? "#" : greedy(r, c)).join(" ")) }; }, destroy() {} };
 } };

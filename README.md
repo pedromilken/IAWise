@@ -35,6 +35,10 @@ As demais 21 fases já existem no mapa (nome, pré-requisito e portão de XP) e 
 - XP por tarefa (10/20/35 × multiplicador do modo), penalidade por verificação falha, sequência, recuperação, quatro modos de dificuldade, loja (escudo, XP em dobro, lente) e títulos.
 - Relatório imprimível e exportação do log no formato longo de datasets de KT.
 
+## Tutor de IA (traga sua própria chave)
+
+Em **Ajustes** o estudante escolhe um provedor (Anthropic, OpenAI, Google Gemini, DeepSeek, Groq/Llama, Mistral, OpenRouter ou um endpoint OpenAI-compatível próprio) e cola a chave. A chave fica só no `localStorage` do navegador e as chamadas vão direto ao provedor (o jogo não tem servidor). No simulador aparece o painel **Tutor de IA**, que recebe a teoria da fase, as tarefas (feitas ou não) e o estado atual do simulador (`sim.state()`), e é instruído a explicar o que os números mostram sem entregar os valores que completam a tarefa. Só o botão de pista marca as tarefas como "com dica" (XP pela metade). Código em `src/llm.js`.
+
 ## Compilar e publicar
 
 ```
@@ -50,7 +54,8 @@ Publique `index.html` no GitHub Pages. O progresso fica no `localStorage` do nav
 src/data.js     mundos, fases, tarefas (itens do KT)
 src/game.js     modos, XP, loja, patentes
 src/models.js   Elo/Rasch, TRI, BKT, PFA, AFM (idêntico ao DevWise)
-src/sims.js     simuladores: mount(el, api) -> {check(taskId), destroy()}
+src/sims.js     simuladores: mount(el, api) -> {check(taskId), state(), destroy()}
+src/llm.js      tutor com LLM: provedores, chave no navegador, chamada de chat
 src/lang-pt.js  textos em português
 src/lang-en.js  textos em inglês
 src/app.js      estado, rastreamento, telas

@@ -135,3 +135,14 @@ p{margin:0 0 .8em;text-align:justify}
 .mlink{display:block;padding:6px 0;color:var(--ink);text-decoration:none;font-size:.97rem} .mlink:hover{text-decoration:underline}
 .mlink .tag{font-size:.75rem;margin-right:4px}
 .whead.small{margin:14px 0 6px;padding-left:10px;border-left:6px solid var(--nn)} .whead.small.rl{border-left-color:var(--rl)} .whead.small .wicon{font-size:1.5rem} .whead.small h4{font-size:1.1rem}
+.tblwrap{overflow-x:auto}
+.maplist{display:grid;gap:8px}
+.mapitem{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:10px;padding:8px 10px}
+.mapitem b{font-family:var(--display);font-size:.95rem} .mapitem i{font-style:normal;font-size:.8rem;color:var(--muted)}
+.mapitem.ok{border-color:var(--ok)} .mapitem.prog,.mapitem.warn{border-color:var(--gold)} .mapitem.locked{opacity:.7} .mapitem.soon{border-style:dashed} .mapitem.sel{border-color:var(--ink)}
+.tutor{grid-column:1/-1;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.tutor h3{font-size:1.1rem;margin-bottom:8px}
+.chatlog{display:grid;gap:8px;max-height:320px;overflow:auto;margin:10px 0;padding:6px 0}
+.msg{padding:9px 12px;border-radius:10px;font-size:.95rem;white-space:pre-wrap;max-width:92%;text-align:left}
+.msg.user{background:var(--sunken);justify-self:end} .msg.assistant{background:var(--gold-soft);justify-self:start}
+.tutor textarea{flex:1;min-width:200px;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink);resize:vertical}

@@ -44,6 +44,15 @@ ui: {
   reset: "Apagar progresso", resetConfirm: "Confirme: apagar todo o progresso", saved: "Ajustes salvos.",
   tabMat: "Material de apoio", matSlides: "Slides da aula (PDF)", matHandout: "Resumo da aula (handout, PDF)", matSim: "Simuladores do professor", matExtras: "Material extra da aula", matLinks: "Leituras, vídeos e interativos complementares", matCommon: "Referências gerais do mundo", matSrc: "Material aberto (CC0) do Prof. Albertini, UFU/FACOM, direto do repositório da disciplina.", kinds: { read: "Leitura", video: "Vídeo", play: "Interativo", paper: "Artigo" },
   next: "Próxima fase", nextSoon: "Próxima fase ({s}) ainda em construção; o material de apoio já está disponível no mapa.", worldAvg: "Domínio médio {p} · {m} de {n} fases dominadas", cmpNote: "Só a primeira verificação falha de cada tarefa entra no modelo; as repetidas ficam no log com counted = 0.",
+  tutorH: "Tutor de IA", tutorOff: "Para conversar com um tutor sobre o que o simulador está mostrando, cadastre uma chave de API em Ajustes (Anthropic, OpenAI, Google, DeepSeek, Groq/Llama, Mistral ou OpenRouter).",
+  tutorPh: "Pergunte sobre o simulador, a teoria ou a tarefa…", tutorSend: "Enviar", tutorQ1: "O que está acontecendo no simulador?", tutorQ2: "Por que minha verificação falhou?", tutorQ3: "Me dê uma pista (vale metade do XP)",
+  tutorNote: "O tutor vê a teoria da fase, as tarefas e o estado atual do simulador. Ele foi instruído a guiar sem entregar os valores exatos. Só a pista marca as tarefas como 'com dica'.", tutorErr: "Não consegui falar com o provedor:",
+  tutorSys: "Você é um tutor paciente e preciso de um jogo educativo sobre redes neurais e aprendizagem por reforço (disciplinas GBC073 e GBC063, UFU). Responda SEMPRE em {lang}, em no máximo 8 frases, sem markdown pesado. Fase atual: \"{lesson}\" (mundo \"{world}\"). Use analogias concretas e conecte sua resposta aos números que o simulador mostra agora.",
+  tutorTheory: "Arsenal teórico da fase:", tutorTasks: "Tarefas do simulador ([x] = feita):", tutorState: "Estado atual do simulador (JSON):",
+  tutorRules: "Regras: (1) nunca entregue os valores exatos de sliders, pesos ou entradas que completam uma tarefa; guie com perguntas e princípios; (2) se o aluno perguntar por que a verificação falhou, compare o estado atual com o que a tarefa pede e aponte a diferença conceitual; (3) corrija concepções erradas com gentileza; (4) se a pergunta fugir da disciplina, redirecione com uma frase.",
+  llmH: "Tutor de IA (sua própria chave)", llmP: "Escolha um provedor e cole sua chave de API. Ela fica somente neste navegador e é enviada direto ao provedor; o jogo não tem servidor.",
+  llmProvider: "Provedor", llmKey: "Chave de API", llmModel: "Modelo (opcional)", llmUrl: "URL do endpoint", llmTest: "Testar conexão", llmForget: "Esquecer chave",
+  llmNote: "Atenção: uma chave guardada no navegador pode ser lida por quem tiver acesso à máquina. Prefira chaves com limite de gasto. Alguns provedores bloqueiam chamadas diretas do navegador (CORS); nesse caso, use OpenRouter ou um proxy próprio.",
   worldQ: "Pergunta do mundo", lesson: "Aula", of: "de"
 },
 worlds: {

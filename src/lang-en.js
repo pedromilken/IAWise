@@ -44,6 +44,15 @@ ui: {
   reset: "Erase progress", resetConfirm: "Confirm: erase all progress", saved: "Settings saved.",
   tabMat: "Support material", matSlides: "Lecture slides (PDF)", matHandout: "Lecture summary (handout, PDF)", matSim: "Instructor's simulators", matExtras: "Extra lecture material", matLinks: "Complementary readings, videos and interactives", matCommon: "General references for this world", matSrc: "Open material (CC0) by Prof. Albertini, UFU/FACOM, straight from the course repository.", kinds: { read: "Reading", video: "Video", play: "Interactive", paper: "Paper" },
   next: "Next stage", nextSoon: "Next stage ({s}) still under construction; its support material is already on the map.", worldAvg: "Average mastery {p} · {m} of {n} stages mastered", cmpNote: "Only the first failed check of each task enters the model; repeated ones stay in the log with counted = 0.",
+  tutorH: "AI tutor", tutorOff: "To chat with a tutor about what the simulator is showing, add an API key in Settings (Anthropic, OpenAI, Google, DeepSeek, Groq/Llama, Mistral or OpenRouter).",
+  tutorPh: "Ask about the simulator, the theory or the task…", tutorSend: "Send", tutorQ1: "What is happening in the simulator?", tutorQ2: "Why did my check fail?", tutorQ3: "Give me a hint (worth half XP)",
+  tutorNote: "The tutor sees the stage theory, the tasks and the current simulator state. It is instructed to guide without giving exact values. Only the hint marks tasks as 'hinted'.", tutorErr: "Could not reach the provider:",
+  tutorSys: "You are a patient, precise tutor inside an educational game about neural networks and reinforcement learning (courses GBC073 and GBC063, UFU). ALWAYS answer in {lang}, in at most 8 sentences, without heavy markdown. Current stage: \"{lesson}\" (world \"{world}\"). Use concrete analogies and connect your answer to the numbers the simulator shows now.",
+  tutorTheory: "Stage theory toolkit:", tutorTasks: "Simulator tasks ([x] = done):", tutorState: "Current simulator state (JSON):",
+  tutorRules: "Rules: (1) never give the exact slider, weight or input values that complete a task; guide with questions and principles; (2) if the student asks why a check failed, compare the current state with what the task asks and point out the conceptual gap; (3) correct misconceptions gently; (4) if the question is off-topic, redirect in one sentence.",
+  llmH: "AI tutor (bring your own key)", llmP: "Pick a provider and paste your API key. It stays in this browser only and is sent straight to the provider; the game has no server.",
+  llmProvider: "Provider", llmKey: "API key", llmModel: "Model (optional)", llmUrl: "Endpoint URL", llmTest: "Test connection", llmForget: "Forget key",
+  llmNote: "Caution: a key stored in the browser can be read by anyone with access to this machine. Prefer keys with a spending limit. Some providers block direct browser calls (CORS); in that case use OpenRouter or your own proxy.",
   worldQ: "World question", lesson: "Lecture", of: "of"
 },
 worlds: {

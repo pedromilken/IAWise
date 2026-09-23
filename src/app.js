@@ -114,7 +114,9 @@ function map() {
       const tx = document.createElementNS(svg.namespaceURI, "text"); tx.setAttribute("x", l.x); tx.setAttribute("y", l.y + 5); tx.setAttribute("text-anchor", "middle"); tx.setAttribute("class", "pct"); tx.textContent = unlocked(l.id) ? pct(trk(l.id).L) : "🔒"; g.append(tx);
       wrapText(l.n + ". " + lsT(l.id).name, 17).forEach((ln, i) => { const lb = document.createElementNS(svg.namespaceURI, "text"); lb.setAttribute("x", l.x); lb.setAttribute("y", l.y + 44 + i * 13); lb.setAttribute("text-anchor", "middle"); lb.setAttribute("class", "lbl"); lb.textContent = ln; g.append(lb); });
       const open = () => { sel = l.id; render(); }; g.addEventListener("click", open); g.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); open(); } }); svg.append(g); }
-    panel.append(el("div", { class: "mapwrap" }, svg));
+    if (window.innerWidth < 640) { /* em telas estreitas o grafo vira lista */
+      panel.append(el("div", { class: "maplist" }, ...ls.map(l => { const [st, cls] = status(l.id); return el("button", { class: "mapitem " + cls + (built(l.id) ? "" : " soon") + (sel === l.id ? " sel" : ""), onclick: () => { sel = l.id; render(); } }, el("b", {}, unlocked(l.id) ? pct(trk(l.id).L) : "🔒"), el("span", {}, l.n + ". " + lsT(l.id).name), el("i", {}, t(st))); }))); }
+    else panel.append(el("div", { class: "mapwrap" }, svg));
     if (sel && LS[sel].world === w.id) panel.append(lessonCard(sel));
     wrap.append(panel);
   }
@@ -151,7 +153,30 @@ function simView(l) {
   const api = { s: k => simT(l.sim, k), refreshTasks: () => paintTasks(l, taskEl) };
   if (!sim || sim.id !== l.sim) { if (sim) sim.destroy(); sim = SIMS[l.sim].mount(simEl, api); sim.id = l.sim; sim.el = simEl; } else simEl.replaceWith(sim.el);
   paintTasks(l, taskEl);
+  box.append(tutorPanel(l));
   return box;
+}
+/* --- tutor com LLM --- */
+let chat = {};   // histórico por fase, só nesta sessão
+function tutorPanel(l) {
+  const L = lsT(l.id), panel = el("div", { class: "tutor" }, el("h3", {}, "🤖 " + t("tutorH")));
+  if (!LLM.ready()) { panel.append(el("p", { class: "empty" }, t("tutorOff")), el("button", { class: "btn small ghost", onclick: () => go("settings") }, t("navSettings"))); return panel; }
+  const hist = chat[l.id] = chat[l.id] || [], log = el("div", { class: "chatlog" }), ta = el("textarea", { rows: 2, placeholder: t("tutorPh") }), busy = el("span", { class: "empty" });
+  const paint = () => { log.innerHTML = ""; hist.forEach(m => log.append(el("div", { class: "msg " + m.role }, m.content))); log.scrollTop = log.scrollHeight; };
+  async function ask(text, isHint) {
+    if (!text.trim()) return; ta.value = ""; hist.push({ role: "user", content: text }); paint(); busy.textContent = "…";
+    if (isHint) TASKS[l.sim].forEach(tk => { if (!S.done[tk.id]) hintOn[tk.id] = true; });
+    const state = sim && sim.state ? sim.state() : {};
+    const tasks = TASKS[l.sim].map(tk => "- [" + (S.done[tk.id] ? "x" : " ") + "] " + L.tasks[tk.id].t).join("\n");
+    const system = t("tutorSys", { lang: Lg().name, lesson: L.name, world: wT(l.world).name }) + "\n\n" + t("tutorTheory") + "\n" + L.theory.map(([h, p]) => h + ": " + p).join("\n") + "\n\n" + t("tutorTasks") + "\n" + tasks + "\n\n" + t("tutorState") + "\n" + JSON.stringify(state) + "\n\n" + t("tutorRules");
+    try { const out = await LLM.chat(system, hist.slice(-8).map(m => ({ role: m.role, content: m.content }))); hist.push({ role: "assistant", content: out }); }
+    catch (e) { hist.push({ role: "assistant", content: t("tutorErr") + " " + (e.message || e) }); }
+    busy.textContent = ""; paint(); if (isHint) { const te = $.querySelector(".tasks"); if (te) paintTasks(l, te); }
+  }
+  panel.append(el("div", { class: "row" }, btn(t("tutorQ1"), () => ask(t("tutorQ1"), false), "btn small ghost"), btn(t("tutorQ2"), () => ask(t("tutorQ2"), false), "btn small ghost"), btn(t("tutorQ3"), () => ask(t("tutorQ3"), true), "btn small ghost")),
+    log, el("div", { class: "row" }, ta, btn(t("tutorSend"), () => ask(ta.value, false)), busy), el("p", { class: "empty" }, t("tutorNote")));
+  ta.addEventListener("keydown", e => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); ask(ta.value, false); } });
+  paint(); return panel;
 }
 function paintTasks(l, taskEl) {
   const L = lsT(l.id), tasks = TASKS[l.sim], m = MODES[S.mode];
@@ -214,14 +239,14 @@ function report() {
   const byW = el("div", { class: "panel" }, el("h3", {}, t("bySkill")));
   for (const w of WORLDS) { const ls = LESSONS.filter(l => l.world === w.id && built(l.id)), mst = ls.filter(l => mastered(l.id) && confirmed(l.id)).length, avg = ls.reduce((a, l) => a + trk(l.id).L, 0) / ls.length;
     byW.append(el("div", { class: "whead small " + w.id }, el("span", { class: "wicon" }, w.icon), el("div", {}, el("h4", {}, wT(w.id).name + " · " + wT(w.id).course), el("span", { class: "empty" }, t("worldAvg", { p: pct(avg), m: mst, n: ls.length })))),
-      el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTries", "colHits", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...ls.map(l => { const tr = trk(l.id), [st] = status(l.id); return el("tr", {}, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)), el("td", {}, tr.n), el("td", {}, tr.c), el("td", {}, t(st))); })))); }
+      el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, ...["colSkill", "colMastery", "colTries", "colHits", "colStatus"].map(k => el("th", {}, t(k))))), el("tbody", {}, ...ls.map(l => { const tr = trk(l.id), [st] = status(l.id); return el("tr", {}, el("td", {}, l.n + ". " + lsT(l.id).name), el("td", {}, el("span", { class: "bar" }, el("i", { style: "width:" + pct(tr.L) })), " " + pct(tr.L)), el("td", {}, tr.n), el("td", {}, tr.c), el("td", {}, t(st))); }))))); }
   sec.append(byW);
   const recs = el("div", { class: "panel" }, el("h3", {}, t("recs")));
   if (!n) recs.append(el("p", { class: "empty" }, t("recNone")));
   else { const cand = LESSONS.filter(l => built(l.id) && unlocked(l.id) && !mastered(l.id)).sort((a, b) => trk(a.id).L - trk(b.id).L)[0]; if (cand) recs.append(el("p", {}, t("recPriority", { s: lsT(cand.id).name, p: pct(trk(cand.id).L), c: trk(cand.id).c, n: trk(cand.id).n })));
     const lk = LESSONS.filter(l => built(l.id) && !unlocked(l.id)).map(l => lsT(l.id).name); if (lk.length) recs.append(el("p", { class: "empty" }, t("recLocked", { s: lk.join(", ") }))); }
   sec.append(recs);
-  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP") + " " + t("cmpNote")), el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...KT.IDS.map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); }))));
+  const cmp = el("div", { class: "panel noprint" }, el("h3", {}, t("cmpH")), el("p", { class: "empty" }, t("cmpP") + " " + t("cmpNote")), el("div", { class: "tblwrap" }, el("table", { class: "tbl" }, el("thead", {}, el("tr", {}, el("th", {}, t("colModel")), el("th", {}, "Brier"), el("th", {}, "AUC"), el("th", {}, t("colAcc")))), el("tbody", {}, ...KT.IDS.map(k => { const sc = KT.score(S.log, k); return el("tr", {}, el("td", {}, t("models")[k] + (k === pilot() ? " ★" : "")), el("td", {}, sc ? sc.brier.toFixed(3) : t("noData")), el("td", {}, sc && sc.auc != null ? sc.auc.toFixed(3) : "–"), el("td", {}, sc ? pct(sc.acc) : "–")); })))));
   sec.append(cmp, el("div", { class: "panel noprint" }, el("h3", {}, t("how")), el("p", {}, t("howP", { m: pct(master()) }))));
   const data = el("div", { class: "panel noprint" }, el("h3", {}, t("dataH")), el("p", { class: "empty" }, t("dataP")), el("div", { class: "row" }, el("button", { class: "btn small", onclick: () => window.print() }, "🖨 " + t("printBtn")), el("button", { class: "btn small ghost", onclick: () => { const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([JSON.stringify(S.log, null, 1)], { type: "application/json" })); a.download = "iawise-log.json"; a.click(); } }, t("download")), el("button", { class: "btn small ghost", onclick: () => { showJson = !showJson; render(); } }, showJson ? t("hideJson") : t("showJson"))), showJson ? el("pre", { class: "json" }, JSON.stringify(S.log.slice(-40), null, 1)) : null);
   sec.append(data, el("p", { class: "empty printonly" }, t("printedOn", { d: new Date().toLocaleDateString() })));
@@ -237,7 +262,20 @@ function settings() {
     el("label", { class: "ctl" }, el("span", {}, t("studentName")), el("input", { type: "text", value: S.name, oninput: e => { S.name = e.target.value; save(); } })),
     el("label", { class: "ctl chk" }, el("input", { type: "checkbox", ...(S.confirm ? { checked: "" } : {}), onchange: e => { S.confirm = e.target.checked; save(); render(); } }), el("span", {}, t("confirmRule"))),
     el("div", { class: "row" }, el("button", { class: "btn small ghost danger", onclick: () => { if (!resetArmed) { resetArmed = true; render(); return; } localStorage.removeItem(KEY); S = fresh(); resetArmed = false; go("home"); } }, resetArmed ? t("resetConfirm") : t("reset"))));
-  sec.append(p); return sec;
+  sec.append(p, llmSettings()); return sec;
+}
+function llmSettings() {
+  const c = LLM.cfg(), status = el("span", { class: "empty" });
+  const box = el("div", { class: "panel" }, el("h3", {}, "🤖 " + t("llmH")), el("p", { class: "empty" }, t("llmP")));
+  const fld = (label, key, type = "text", ph = "") => el("label", { class: "ctl" }, el("span", {}, label), el("input", { type, value: c[key] || "", placeholder: ph, oninput: e => { c[key] = e.target.value.trim(); LLM.save(c); } }));
+  const modelF = fld(t("llmModel"), "model", "text", PROVIDERS[c.provider].model), urlF = fld(t("llmUrl"), "url", "text", "https://.../v1/chat/completions");
+  urlF.style.display = c.provider === "custom" ? "" : "none";
+  box.append(el("label", { class: "ctl" }, el("span", {}, t("llmProvider")), el("select", { onchange: e => { c.provider = e.target.value; LLM.save(c); modelF.querySelector("input").placeholder = PROVIDERS[c.provider].model; urlF.style.display = c.provider === "custom" ? "" : "none"; } }, ...Object.keys(PROVIDERS).map(k => el("option", { value: k, ...(c.provider === k ? { selected: "" } : {}) }, PROVIDERS[k].name)))),
+    fld(t("llmKey"), "key", "password", "sk-…"), modelF, urlF,
+    el("div", { class: "row" }, el("button", { class: "btn small", onclick: async () => { status.textContent = "…"; try { const out = await LLM.chat("Reply with one short sentence.", [{ role: "user", content: "Say hello." }]); status.textContent = "✓ " + out.slice(0, 80); } catch (e) { status.textContent = "✗ " + (e.message || e); } } }, t("llmTest")),
+      el("button", { class: "btn small ghost danger", onclick: () => { localStorage.removeItem(LLM_KEY); render(); } }, t("llmForget")), status),
+    el("p", { class: "empty" }, t("llmNote")));
+  return box;
 }
 
 /* ---------- boot ---------- */

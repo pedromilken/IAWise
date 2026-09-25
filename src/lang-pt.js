@@ -80,7 +80,7 @@ sims: {
   gradient: { lr: "Taxa de aprendizado (η)", step1: "Um passo de gradiente", reset: "Reiniciar (w = -2)", steps: "Passos", fit: "reta w·x sobre os dados" },
   backprop: { scA: "Cenário A", scB: "Cenário B (z < 0)", path: "Mostrar derivadas locais", sc: "Cenário", note: "Digite cada derivada com duas casas decimais e clique em Verificar na tarefa correspondente." },
   optimizers: { surface: "Terreno", bowl: "Tigela alongada", valley: "Vale curvo (Rosenbrock)", lr: "Taxa de aprendizado", momentum: "Momento", run10: "10 passos", run100: "100 passos", reset: "Reiniciar", steps: "Passos" },
-  rover: { discount: "desconto", slip: "Prob. de derrapar", allR: "Tudo →", allL: "Tudo ←", walk: "Soltar o rover", tip: "Clique numa célula para virar a seta da política. As barras mostram V^π(s): o retorno esperado seguindo a sua política.", steps: "passos da última caminhada" },
+  rover: { discount: "desconto", slip: "Prob. de derrapar", allR: "Tudo →", allL: "Tudo ←", walk: "Soltar o rover", tip: "Clique numa célula para virar a seta da política. As barras mostram V^π(s): o retorno esperado seguindo a sua política.", steps: "passos da última caminhada", isOpt: "sua política é ótima para este γ", notOpt: "sua política ainda não é a ótima", slipNote: "as tarefas pedem derrapagem 0" },
   gridworld: { discount: "desconto", slip: "Prob. de derrapar", live: "Recompensa por passo", sweep1: "Uma varredura", converge: "Até convergir", reset: "Zerar V", start: "início", sweeps: "Varreduras", done: "convergiu" }
 },
 lessons: {
@@ -170,7 +170,7 @@ lessons: {
     tasks: { m1: { t: "Com γ = 0,90 e sem derrapagem, faça a política levar o rover à amostra rara a partir de s2 com V(s2) > 5.", h: "Todas as setas para a direita. Cinco passos: 0,9⁴ × 10 ≈ 6,6." },
              m2: { t: "Ajuste γ = 0,50 e encontre a política ótima: ela vai para a esquerda em s2 e para a direita em s3.", h: "Com γ pequeno o futuro vale pouco: em s2, 1 ponto aqui do lado vence 10 pontos a cinco passos (10 × 0,5⁴ = 0,6). Em s3, 10 × 0,5³ = 1,25 vence 0,5." },
              m3: { t: "Com γ ≥ 0,90, encontre a política ótima (todas as setas para a direita).", h: "Quando o futuro vale quase tanto quanto o presente, vale a pena andar até a amostra rara de qualquer lugar." },
-             m4: { t: "Encontre um γ em que a política ótima seja ← em s2, ← em s3 e → em s4, e configure-a.", h: "Em s3: ir à esquerda vale γ; ir à direita vale 10γ³. Esquerda vence quando γ² < 0,1, ou seja, γ < 0,32." } }
+             m4: { t: "Com derrapagem 0, encontre um γ em que a política ótima seja ← em s2 e s3 e → de s4 em diante; depois clique nas setas até o indicador confirmar que a sua política é ótima.", h: "Passo 1: em s3, ir à esquerda vale γ e à direita 10γ³; a esquerda vence se γ < 0,32. Passo 2: com γ ≈ 0,3, use \"Tudo →\" e clique em s2 e s3 para virá-las." } }
   },
   rl02: { name: "Decisões com modelo do mundo", about: "MDPs, iteração de valor e políticas ótimas.", client: "Rover num terreno com buraco",
     title: "Quando o chão escorrega",

@@ -15,6 +15,9 @@ function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L
   return { v: 1, started: false, lang: guessLang(), skills, done: {}, failed: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0, key: 0 }, keyed: {}, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
 function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (d.inv.key == null) d.inv.key = 0; if (!d.keyed) d.keyed = {}; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+const HINT_W = .5;
+/* mistura numérica recursiva entre dois estados de modelo: a + w·(b − a) */
+function blend(a, b, w) { if (typeof a === "number" && typeof b === "number") return a + w * (b - a); if (Array.isArray(b)) return b.map((v, i) => blend(a ? a[i] : v, v, w)); if (b && typeof b === "object") { const o = {}; for (const k in b) o[k] = a && k in a ? blend(a[k], b[k], w) : b[k]; return o; } return b; }
 /* Prior hierárquico: enquanto uma fase não tem nenhuma resposta, seu L0 = (1 − W)·L0_BASE + W·domínio atual do pré-requisito.
    Na primeira resposta contada o prior é congelado (tr.prior). ?prior=fixo na URL volta ao L0 fixo (para experimento).
    Em paralelo, tr.fix guarda um Elo com prior fixo (contrafactual), cujas previsões vão ao log como preds.elo_fixed. */
@@ -56,10 +59,16 @@ function answer(item, ok, usedHint) {
   const counted = ok || !S.failed[item.id];
   if (counted && tr.prior == null) tr.prior = +tr.L.toFixed(4);
   preds.elo_fixed = +Math.min(.999, Math.max(.001, KT.MODELS.elo.predict(tr.fix.m.elo, item, c))).toFixed(4);
-  if (counted) { KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
+  /* Acerto com dica vale meia evidência: atualiza normalmente e depois traz cada parâmetro dos modelos
+     de volta à metade do caminho entre o estado anterior e o novo (HINT_W = 0,5). */
+  const w = ok && usedHint ? HINT_W : 1;
+  if (counted) { const b0 = w < 1 ? JSON.parse(JSON.stringify({ m: tr.m, f: tr.fix.m })) : null;
+    KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok);
+    if (b0) { tr.m = blend(b0.m, tr.m, w); tr.fix.m = blend(b0.f, tr.fix.m, w); }
+    tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
   if (!ok) S.failed[item.id] = (S.failed[item.id] || 0) + 1;
   if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
-  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, keyed: S.keyed[item.skill] ? 1 : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, keyed: S.keyed[item.skill] ? 1 : 0, w: counted ? w : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
   msgs = [];
   const m = MODES[S.mode];
   if (ok) {

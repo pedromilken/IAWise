@@ -80,7 +80,7 @@ sims: {
   gradient: { lr: "Learning rate (η)", step1: "One gradient step", reset: "Reset (w = -2)", steps: "Steps", fit: "line w·x over the data" },
   backprop: { scA: "Scenario A", scB: "Scenario B (z < 0)", path: "Show local derivatives", sc: "Scenario", note: "Type each derivative with two decimals and click Verify on the matching task." },
   optimizers: { surface: "Terrain", bowl: "Elongated bowl", valley: "Curved valley (Rosenbrock)", lr: "Learning rate", momentum: "Momentum", run10: "10 steps", run100: "100 steps", reset: "Reset", steps: "Steps" },
-  rover: { discount: "discount", slip: "Slip probability", allR: "All →", allL: "All ←", walk: "Release the rover", tip: "Click a cell to flip the policy arrow. Bars show V^π(s): the expected return following your policy.", steps: "steps in the last walk" },
+  rover: { discount: "discount", slip: "Slip probability", allR: "All →", allL: "All ←", walk: "Release the rover", tip: "Click a cell to flip the policy arrow. Bars show V^π(s): the expected return following your policy.", steps: "steps in the last walk", isOpt: "your policy is optimal for this γ", notOpt: "your policy is not optimal yet", slipNote: "the tasks require slip 0" },
   gridworld: { discount: "discount", slip: "Slip probability", live: "Reward per step", sweep1: "One sweep", converge: "Until convergence", reset: "Reset V", start: "start", sweeps: "Sweeps", done: "converged" }
 },
 lessons: {
@@ -170,7 +170,7 @@ lessons: {
     tasks: { m1: { t: "With γ = 0.90 and no slipping, make the policy take the rover to the rare sample from s2 with V(s2) > 5.", h: "All arrows to the right. Five steps: 0.9⁴ × 10 ≈ 6.6." },
              m2: { t: "Set γ = 0.50 and find the optimal policy: it goes left at s2 and right at s3.", h: "With small γ the future is worth little: at s2, 1 point next door beats 10 points five steps away (10 × 0.5⁴ = 0.6). At s3, 10 × 0.5³ = 1.25 beats 0.5." },
              m3: { t: "With γ ≥ 0.90, find the optimal policy (all arrows to the right).", h: "When the future is worth almost as much as the present, walking to the rare sample pays off from anywhere." },
-             m4: { t: "Find a γ where the optimal policy is ← at s2, ← at s3 and → at s4, and configure it.", h: "At s3: going left is worth γ; going right is worth 10γ³. Left wins when γ² < 0.1, that is, γ < 0.32." } }
+             m4: { t: "With slip 0, find a γ where the optimal policy is ← at s2 and s3 and → from s4 onward; then click the arrows until the indicator confirms your policy is optimal.", h: "Step 1: at s3, going left is worth γ and going right 10γ³; left wins if γ < 0.32. Step 2: with γ ≈ 0.3, use \"All →\" and click s2 and s3 to flip them." } }
   },
   rl02: { name: "Decisions with a model of the world", about: "MDPs, value iteration and optimal policies.", client: "Rover on terrain with a pit",
     title: "When the ground slips",

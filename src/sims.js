@@ -274,6 +274,7 @@ SIMS.rover = { mount(el, api) {
   const st = { gamma: .9, slip: 0, pol: [null, "R", "R", "R", "R", "R", null], pos: 3, trail: [] };
   function evalPol(pol) { let V = Array(N).fill(0); for (let k = 0; k < 400; k++) { const nv = [...V]; for (let i = 1; i < N - 1; i++) { const a = pol[i], go = a === "R" ? i + 1 : i - 1, other = a === "R" ? i - 1 : i + 1, q = t => R[t] + (t === 0 || t === N - 1 ? 0 : st.gamma * V[t]); nv[i] = (1 - st.slip) * q(go) + st.slip * q(other); } V = nv; } return V; }
   function optimal() { let V = Array(N).fill(0), pol = [...st.pol]; for (let k = 0; k < 400; k++) { const nv = [...V]; for (let i = 1; i < N - 1; i++) { const q = t => R[t] + (t === 0 || t === N - 1 ? 0 : st.gamma * V[t]); const qr = (1 - st.slip) * q(i + 1) + st.slip * q(i - 1), ql = (1 - st.slip) * q(i - 1) + st.slip * q(i + 1); nv[i] = Math.max(qr, ql); pol[i] = qr >= ql - 1e-9 ? "R" : "L"; } V = nv; } return { V, pol }; }
+  const isOpt = () => { const o = optimal(), V = evalPol(st.pol); return o.V.every((v, i) => Math.abs(v - V[i]) < 1e-6); }, sameOpt = () => st.slip === 0 && isOpt();
   const cv = canvas(el, 560, 260), g = cv.g;
   const ctl = H("div", { class: "ctls" }); el.append(ctl);
   const info = H("div", { class: "siminfo" });
@@ -290,11 +291,10 @@ SIMS.rover = { mount(el, api) {
       if (!term) { g.font = "22px sans-serif"; g.fillText(st.pol[i] === "R" ? "→" : "←", x + cw / 2, 168); const h = V[i] / vmax * 70; g.fillStyle = C.a; g.fillRect(x + cw / 2 - 14, 105 - h, 28, h); g.fillStyle = C.muted; g.font = "11px monospace"; g.fillText(fmt2(V[i]), x + cw / 2, 100 - h); }
       if (st.pos === i) { g.font = "26px sans-serif"; g.fillText("🛸", x + cw / 2, 215); } }
     g.fillStyle = C.muted; g.font = "12px sans-serif"; g.textAlign = "left"; g.fillText("V^π(s)", 20, 20);
-    info.innerHTML = ""; info.append(H("b", {}, "V(s4) = " + fmt3(V[3])), " · " + s("steps") + " " + st.trail.length);
+    info.innerHTML = ""; info.append(H("b", {}, "V(s4) = " + fmt3(V[3])), " · " + s("steps") + " " + st.trail.length, " · ", H("b", {}, s(isOpt() ? "isOpt" : "notOpt")), st.slip ? " · " + s("slipNote") : "");
     api.refreshTasks();
   }
   draw();
-  const sameOpt = () => { const o = optimal(), V = evalPol(st.pol); return st.slip === 0 && o.V.every((v, i) => Math.abs(v - V[i]) < 1e-6); };
   return { check(id) {
     if (id === "m1") return st.slip === 0 && Math.abs(st.gamma - .9) < .011 && st.pol.slice(1, -1).every(a => a === "R") && evalPol(st.pol)[1] > 5;
     if (id === "m2") return Math.abs(st.gamma - .5) < .06 && sameOpt() && st.pol[1] === "L" && st.pol[2] === "R";

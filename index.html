@@ -662,6 +662,7 @@ SIMS.rover = { mount(el, api) {
   const st = { gamma: .9, slip: 0, pol: [null, "R", "R", "R", "R", "R", null], pos: 3, trail: [] };
   function evalPol(pol) { let V = Array(N).fill(0); for (let k = 0; k < 400; k++) { const nv = [...V]; for (let i = 1; i < N - 1; i++) { const a = pol[i], go = a === "R" ? i + 1 : i - 1, other = a === "R" ? i - 1 : i + 1, q = t => R[t] + (t === 0 || t === N - 1 ? 0 : st.gamma * V[t]); nv[i] = (1 - st.slip) * q(go) + st.slip * q(other); } V = nv; } return V; }
   function optimal() { let V = Array(N).fill(0), pol = [...st.pol]; for (let k = 0; k < 400; k++) { const nv = [...V]; for (let i = 1; i < N - 1; i++) { const q = t => R[t] + (t === 0 || t === N - 1 ? 0 : st.gamma * V[t]); const qr = (1 - st.slip) * q(i + 1) + st.slip * q(i - 1), ql = (1 - st.slip) * q(i - 1) + st.slip * q(i + 1); nv[i] = Math.max(qr, ql); pol[i] = qr >= ql - 1e-9 ? "R" : "L"; } V = nv; } return { V, pol }; }
+  const isOpt = () => { const o = optimal(), V = evalPol(st.pol); return o.V.every((v, i) => Math.abs(v - V[i]) < 1e-6); }, sameOpt = () => st.slip === 0 && isOpt();
   const cv = canvas(el, 560, 260), g = cv.g;
   const ctl = H("div", { class: "ctls" }); el.append(ctl);
   const info = H("div", { class: "siminfo" });
@@ -678,11 +679,10 @@ SIMS.rover = { mount(el, api) {
       if (!term) { g.font = "22px sans-serif"; g.fillText(st.pol[i] === "R" ? "→" : "←", x + cw / 2, 168); const h = V[i] / vmax * 70; g.fillStyle = C.a; g.fillRect(x + cw / 2 - 14, 105 - h, 28, h); g.fillStyle = C.muted; g.font = "11px monospace"; g.fillText(fmt2(V[i]), x + cw / 2, 100 - h); }
       if (st.pos === i) { g.font = "26px sans-serif"; g.fillText("🛸", x + cw / 2, 215); } }
     g.fillStyle = C.muted; g.font = "12px sans-serif"; g.textAlign = "left"; g.fillText("V^π(s)", 20, 20);
-    info.innerHTML = ""; info.append(H("b", {}, "V(s4) = " + fmt3(V[3])), " · " + s("steps") + " " + st.trail.length);
+    info.innerHTML = ""; info.append(H("b", {}, "V(s4) = " + fmt3(V[3])), " · " + s("steps") + " " + st.trail.length, " · ", H("b", {}, s(isOpt() ? "isOpt" : "notOpt")), st.slip ? " · " + s("slipNote") : "");
     api.refreshTasks();
   }
   draw();
-  const sameOpt = () => { const o = optimal(), V = evalPol(st.pol); return st.slip === 0 && o.V.every((v, i) => Math.abs(v - V[i]) < 1e-6); };
   return { check(id) {
     if (id === "m1") return st.slip === 0 && Math.abs(st.gamma - .9) < .011 && st.pol.slice(1, -1).every(a => a === "R") && evalPol(st.pol)[1] > 5;
     if (id === "m2") return Math.abs(st.gamma - .5) < .06 && sameOpt() && st.pol[1] === "L" && st.pol[2] === "R";
@@ -1663,7 +1663,7 @@ sims: {
   gradient: { lr: "Taxa de aprendizado (η)", step1: "Um passo de gradiente", reset: "Reiniciar (w = -2)", steps: "Passos", fit: "reta w·x sobre os dados" },
   backprop: { scA: "Cenário A", scB: "Cenário B (z < 0)", path: "Mostrar derivadas locais", sc: "Cenário", note: "Digite cada derivada com duas casas decimais e clique em Verificar na tarefa correspondente." },
   optimizers: { surface: "Terreno", bowl: "Tigela alongada", valley: "Vale curvo (Rosenbrock)", lr: "Taxa de aprendizado", momentum: "Momento", run10: "10 passos", run100: "100 passos", reset: "Reiniciar", steps: "Passos" },
-  rover: { discount: "desconto", slip: "Prob. de derrapar", allR: "Tudo →", allL: "Tudo ←", walk: "Soltar o rover", tip: "Clique numa célula para virar a seta da política. As barras mostram V^π(s): o retorno esperado seguindo a sua política.", steps: "passos da última caminhada" },
+  rover: { discount: "desconto", slip: "Prob. de derrapar", allR: "Tudo →", allL: "Tudo ←", walk: "Soltar o rover", tip: "Clique numa célula para virar a seta da política. As barras mostram V^π(s): o retorno esperado seguindo a sua política.", steps: "passos da última caminhada", isOpt: "sua política é ótima para este γ", notOpt: "sua política ainda não é a ótima", slipNote: "as tarefas pedem derrapagem 0" },
   gridworld: { discount: "desconto", slip: "Prob. de derrapar", live: "Recompensa por passo", sweep1: "Uma varredura", converge: "Até convergir", reset: "Zerar V", start: "início", sweeps: "Varreduras", done: "convergiu" }
 },
 lessons: {
@@ -1753,7 +1753,7 @@ lessons: {
     tasks: { m1: { t: "Com γ = 0,90 e sem derrapagem, faça a política levar o rover à amostra rara a partir de s2 com V(s2) > 5.", h: "Todas as setas para a direita. Cinco passos: 0,9⁴ × 10 ≈ 6,6." },
              m2: { t: "Ajuste γ = 0,50 e encontre a política ótima: ela vai para a esquerda em s2 e para a direita em s3.", h: "Com γ pequeno o futuro vale pouco: em s2, 1 ponto aqui do lado vence 10 pontos a cinco passos (10 × 0,5⁴ = 0,6). Em s3, 10 × 0,5³ = 1,25 vence 0,5." },
              m3: { t: "Com γ ≥ 0,90, encontre a política ótima (todas as setas para a direita).", h: "Quando o futuro vale quase tanto quanto o presente, vale a pena andar até a amostra rara de qualquer lugar." },
-             m4: { t: "Encontre um γ em que a política ótima seja ← em s2, ← em s3 e → em s4, e configure-a.", h: "Em s3: ir à esquerda vale γ; ir à direita vale 10γ³. Esquerda vence quando γ² < 0,1, ou seja, γ < 0,32." } }
+             m4: { t: "Com derrapagem 0, encontre um γ em que a política ótima seja ← em s2 e s3 e → de s4 em diante; depois clique nas setas até o indicador confirmar que a sua política é ótima.", h: "Passo 1: em s3, ir à esquerda vale γ e à direita 10γ³; a esquerda vence se γ < 0,32. Passo 2: com γ ≈ 0,3, use \"Tudo →\" e clique em s2 e s3 para virá-las." } }
   },
   rl02: { name: "Decisões com modelo do mundo", about: "MDPs, iteração de valor e políticas ótimas.", client: "Rover num terreno com buraco",
     title: "Quando o chão escorrega",
@@ -2128,7 +2128,7 @@ sims: {
   gradient: { lr: "Learning rate (η)", step1: "One gradient step", reset: "Reset (w = -2)", steps: "Steps", fit: "line w·x over the data" },
   backprop: { scA: "Scenario A", scB: "Scenario B (z < 0)", path: "Show local derivatives", sc: "Scenario", note: "Type each derivative with two decimals and click Verify on the matching task." },
   optimizers: { surface: "Terrain", bowl: "Elongated bowl", valley: "Curved valley (Rosenbrock)", lr: "Learning rate", momentum: "Momentum", run10: "10 steps", run100: "100 steps", reset: "Reset", steps: "Steps" },
-  rover: { discount: "discount", slip: "Slip probability", allR: "All →", allL: "All ←", walk: "Release the rover", tip: "Click a cell to flip the policy arrow. Bars show V^π(s): the expected return following your policy.", steps: "steps in the last walk" },
+  rover: { discount: "discount", slip: "Slip probability", allR: "All →", allL: "All ←", walk: "Release the rover", tip: "Click a cell to flip the policy arrow. Bars show V^π(s): the expected return following your policy.", steps: "steps in the last walk", isOpt: "your policy is optimal for this γ", notOpt: "your policy is not optimal yet", slipNote: "the tasks require slip 0" },
   gridworld: { discount: "discount", slip: "Slip probability", live: "Reward per step", sweep1: "One sweep", converge: "Until convergence", reset: "Reset V", start: "start", sweeps: "Sweeps", done: "converged" }
 },
 lessons: {
@@ -2218,7 +2218,7 @@ lessons: {
     tasks: { m1: { t: "With γ = 0.90 and no slipping, make the policy take the rover to the rare sample from s2 with V(s2) > 5.", h: "All arrows to the right. Five steps: 0.9⁴ × 10 ≈ 6.6." },
              m2: { t: "Set γ = 0.50 and find the optimal policy: it goes left at s2 and right at s3.", h: "With small γ the future is worth little: at s2, 1 point next door beats 10 points five steps away (10 × 0.5⁴ = 0.6). At s3, 10 × 0.5³ = 1.25 beats 0.5." },
              m3: { t: "With γ ≥ 0.90, find the optimal policy (all arrows to the right).", h: "When the future is worth almost as much as the present, walking to the rare sample pays off from anywhere." },
-             m4: { t: "Find a γ where the optimal policy is ← at s2, ← at s3 and → at s4, and configure it.", h: "At s3: going left is worth γ; going right is worth 10γ³. Left wins when γ² < 0.1, that is, γ < 0.32." } }
+             m4: { t: "With slip 0, find a γ where the optimal policy is ← at s2 and s3 and → from s4 onward; then click the arrows until the indicator confirms your policy is optimal.", h: "Step 1: at s3, going left is worth γ and going right 10γ³; left wins if γ < 0.32. Step 2: with γ ≈ 0.3, use \"All →\" and click s2 and s3 to flip them." } }
   },
   rl02: { name: "Decisions with a model of the world", about: "MDPs, value iteration and optimal policies.", client: "Rover on terrain with a pit",
     title: "When the ground slips",
@@ -2528,6 +2528,9 @@ function fresh() { const skills = {}; LESSONS.forEach(l => skills[l.id] = { L: L
   return { v: 1, started: false, lang: guessLang(), skills, done: {}, failed: {}, log: [], xp: 0, xpTotal: 0, mode: "normal", inv: { shield: 0, boost: 0, lens: 0, key: 0 }, keyed: {}, boost: 0, titles: [], title: null, streak: 0, best: 0, lastWrong: false, confirm: true, name: "", theme: "auto", opened: {} }; }
 function load() { try { const d = JSON.parse(localStorage.getItem(KEY) || "null"); if (d && d.v === 1 && d.skills) { const f = fresh(); for (const k in f) if (d[k] === undefined) d[k] = f[k]; LESSONS.forEach(l => { if (!d.skills[l.id]) d.skills[l.id] = { L: L0, n: 0, c: 0 }; }); if (!MODES[d.mode]) d.mode = "normal"; if (d.inv.key == null) d.inv.key = 0; if (!d.keyed) d.keyed = {}; if (!LANG[d.lang]) d.lang = "pt"; return d; } } catch (e) { } return fresh(); }
 function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) { } }
+const HINT_W = .5;
+/* mistura numérica recursiva entre dois estados de modelo: a + w·(b − a) */
+function blend(a, b, w) { if (typeof a === "number" && typeof b === "number") return a + w * (b - a); if (Array.isArray(b)) return b.map((v, i) => blend(a ? a[i] : v, v, w)); if (b && typeof b === "object") { const o = {}; for (const k in b) o[k] = a && k in a ? blend(a[k], b[k], w) : b[k]; return o; } return b; }
 /* Prior hierárquico: enquanto uma fase não tem nenhuma resposta, seu L0 = (1 − W)·L0_BASE + W·domínio atual do pré-requisito.
    Na primeira resposta contada o prior é congelado (tr.prior). ?prior=fixo na URL volta ao L0 fixo (para experimento).
    Em paralelo, tr.fix guarda um Elo com prior fixo (contrafactual), cujas previsões vão ao log como preds.elo_fixed. */
@@ -2569,10 +2572,16 @@ function answer(item, ok, usedHint) {
   const counted = ok || !S.failed[item.id];
   if (counted && tr.prior == null) tr.prior = +tr.L.toFixed(4);
   preds.elo_fixed = +Math.min(.999, Math.max(.001, KT.MODELS.elo.predict(tr.fix.m.elo, item, c))).toFixed(4);
-  if (counted) { KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok); tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
+  /* Acerto com dica vale meia evidência: atualiza normalmente e depois traz cada parâmetro dos modelos
+     de volta à metade do caminho entre o estado anterior e o novo (HINT_W = 0,5). */
+  const w = ok && usedHint ? HINT_W : 1;
+  if (counted) { const b0 = w < 1 ? JSON.parse(JSON.stringify({ m: tr.m, f: tr.fix.m })) : null;
+    KT.updateAll(tr, item, c, ok); KT.MODELS.elo.update(tr.fix.m.elo, item, c, ok);
+    if (b0) { tr.m = blend(b0.m, tr.m, w); tr.fix.m = blend(b0.f, tr.fix.m, w); }
+    tr.L = KT.mastery(tr, pilot()); tr.n++; if (ok) tr.c++; }
   if (!ok) S.failed[item.id] = (S.failed[item.id] || 0) + 1;
   if (ok) { tr.days = tr.days || []; if (!tr.days.includes(today())) tr.days.push(today()); }
-  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, keyed: S.keyed[item.skill] ? 1 : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
+  S.log.push({ ts: Date.now(), item: item.id, skill: item.skill, ok: ok ? 1 : 0, counted: counted ? 1 : 0, keyed: S.keyed[item.skill] ? 1 : 0, w: counted ? w : 0, prior: tr.prior, priorMode: PRIOR.mode + "/" + PRIOR.v, hint: usedHint ? 1 : 0, lang: S.lang, mode: S.mode, before: +was.L.toFixed(3), after: +tr.L.toFixed(3), preds });
   msgs = [];
   const m = MODES[S.mode];
   if (ok) {

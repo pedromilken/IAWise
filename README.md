@@ -64,6 +64,7 @@ Toda fase tem uma aba **Material de apoio** com os slides (PDF) e, no mundo 2, o
 
 - **Elo/Rasch** pilota o jogo: domínio por fase, 60% libera a próxima, 85% domina, confirmação em outro dia. **TRI 3PL (EAP), BKT, PFA e AFM** rodam como sombras e registram no log a previsão feita antes de cada verificação (aba Relatório mostra Brier, AUC e acurácia).
 - **Prior hierárquico:** a primeira fase de cada mundo começa em 15%; cada fase seguinte começa em 0,5·15% + 0,5·(domínio da fase anterior), congelado na primeira resposta. Um Elo contrafactual com prior fixo roda em paralelo (`preds.elo_fixed` no log) para comparar as duas estratégias nas mesmas trajetórias; `?prior=fixo` na URL inverte o piloto. Cada linha do log registra `prior` e `priorMode`.
+- **Acerto com dica vale meia evidência**: os modelos atualizam e cada parâmetro volta à metade do caminho (`w: 0.5` no log).
 - **Só a primeira falha de cada tarefa entra no modelo**: verificar de novo enquanto se ajusta o simulador é exploração, não desconhecimento. As falhas repetidas custam XP e ficam no log com `counted: 0`. Concluir as 4 tarefas de uma fase também libera a seguinte.
 - XP por tarefa (10/20/35 × multiplicador do modo), penalidade por verificação falha, sequência e recuperação. Quatro modos de dificuldade em **Ajustes**.
 - **Loja:** escudo, XP em dobro, lente e a **chave da curiosidade** (abre uma fase bloqueada sem mudar o domínio; as respostas dessa fase vão ao log com `keyed: 1`), além de títulos.

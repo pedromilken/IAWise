@@ -101,14 +101,23 @@ module.exports = {
     /* aplica os comandos; devolve {checks, valid, junk, log} */
     function apply(el, h, key, reply) {
       const cs = controls(el), out = { checks: [], valid: 0, junk: 0, log: [], clicks: 0, timeout: 0 }, tTurn = Date.now(), ev = (e, t) => e.dispatchEvent(new w.Event(t, { bubbles: true }));
-      for (let line of String(reply).split(/\n|;/)) { line = line.replace(/^[\s>*\-`]+|[`\s]+$/g, ""); if (!line) continue;
-        const m = line.match(/^(SET|CHOOSE|CLICK|TOGGLE|TAP|CHECK)\b\s*(\d+)?\s*(.*)$/i); if (!m) { if (!/^ANSWER/i.test(line)) out.junk++; continue; }
-        const cmd = m[1].toUpperCase(), e = m[2] ? cs[+m[2] - 1] : null, arg = (m[3] || "").trim();
+      for (let line of String(reply).split(/\n|;/)) {
+        /* leitura tolerante, como o corretor de múltipla escolha: "[4]" vale 4, "SET 2 = 0.5" vale "SET 2 0.5", e o verbo trocado
+           (CHOOSE num slider, SET num seletor) é entendido pelo tipo do controle. Isso conta como formato "tolerado", não como erro:
+           o que se mede é o conhecimento do domínio, não a obediência à sintaxe. (Na triagem de 08/10, 1/3 das respostas do
+           gemma3:12b vinham com colchetes, mais com notas do que sem: sem esta leitura, as notas pareciam piorar o acerto.) */
+        line = line.replace(/^[\s>*\-`#]+|[`\s*]+$/g, "").replace(/\[\s*(\d+)\s*\]/g, "$1").replace(/^(\w+)\s*:\s*/, "$1 "); if (!line) continue;
+        const m = line.match(/^(SET|CHOOSE|SELECT|CLICK|PRESS|TOGGLE|TAP|CHECK|VERIFY)\b\s*(\d+)?\s*[=:]?\s*(.*)$/i); if (!m) { if (!/^ANSWER/i.test(line)) out.junk++; continue; }
+        let cmd = m[1].toUpperCase(); const e = m[2] ? cs[+m[2] - 1] : null; let arg = (m[3] || "").replace(/^(to|para|=)\s+/i, "").trim();
+        const canon = { SELECT: "CHOOSE", PRESS: "CLICK", VERIFY: "CHECK" }; if (canon[cmd]) { cmd = canon[cmd]; out.tol = (out.tol || 0) + 1; }
+        if (e && cmd === "CHOOSE" && e.tagName === "INPUT" && e.type !== "checkbox" && /-?\d/.test(arg)) { cmd = "SET"; out.tol = (out.tol || 0) + 1; }
+        else if (e && cmd === "SET" && e.tagName === "SELECT") { cmd = "CHOOSE"; out.tol = (out.tol || 0) + 1; }
+        else if (e && cmd === "SET" && e.type === "checkbox") { cmd = "TOGGLE"; out.tol = (out.tol || 0) + 1; }
         try {
           flush();
           if (cmd === "CHECK") { const ok = !!h.check(key); out.checks.push(ok); out.valid++; out.log.push("CHECK → " + (ok ? "done" : "not yet")); if (ok) break; continue; }
           if (!e) { out.junk++; out.log.push(line + " → no such control"); continue; }
-          if (cmd === "SET" && e.tagName === "INPUT" && e.type !== "checkbox") { const v = parseFloat(arg.replace(",", ".")); if (isNaN(v)) { out.junk++; continue; }
+          if (cmd === "SET" && e.tagName === "INPUT" && e.type !== "checkbox") { const v = parseFloat((arg.replace(",", ".").match(/-?\d+(?:\.\d+)?(?:e-?\d+)?/i) || [""])[0]); if (isNaN(v)) { out.junk++; continue; }
             /* como o slider de verdade: limita ao intervalo e encaixa no passo */
             let x = v; if (e.type === "range") { const lo = +e.min, hi = +e.max, st = +e.step || 1; x = Math.min(hi, Math.max(lo, lo + Math.round((v - lo) / st) * st)); x = +x.toFixed(6); }
             e.value = String(x); ev(e, "input"); ev(e, "change"); out.valid++; out.log.push("SET " + m[2] + " = " + e.value); }
@@ -128,7 +137,7 @@ module.exports = {
       flush(); return out;
     }
     const SYS = l => `You are role-playing an adult BEGINNER studying ${l === "en" ? "" : ""}artificial intelligence and neural networks in a game with interactive simulators. The game interface is in ${l === "en" ? "English" : "Portuguese"}. You only know what is written in your NOTES below; if the NOTES do not cover the task, act the way a beginner would try, without using knowledge you are not supposed to have.
-Each turn you see the simulator controls and its visible text. Reply ONLY with commands, one per line (at most 6 per turn):
+Each turn you see the simulator controls and its visible text. Reply ONLY with commands, one per line (at most 6 per turn), with the control number without brackets (e.g. SET 2 0.5):
 SET <n> <value> | CHOOSE <n> <option> | CLICK <n> [times, at most 10] | TOGGLE <n> | TAP <n> <x> <y> (canvas) | CHECK
 Write CHECK when you believe the task is accomplished. You have ${TURNS} turns.`;
     /* Episódios de várias rodadas: cada um tem o PRÓPRIO gerador (semente tirada de r antes de qualquer espera) e o próprio
@@ -166,7 +175,7 @@ Write CHECK when you believe the task is accomplished. You have ${TURNS} turns.`
           msgs.push({ role: "user", content: head + "TURN " + t + " of " + TURNS + "\n" + view + (last ? "\nRESULT OF YOUR LAST COMMANDS: " + last : "") });
           const a = brain.kind === "aleatorio" ? (brain.stats.calls++, randomCommands(view, ar)) : await brain.call(msgs, { temperature: 0.7, max: 140, rng: ar }); msgs.push({ role: "assistant", content: a || "(nothing)" });
           enter(); const res = apply(m.el, m.h, it.key, a); leave();
-          valid += res.valid; junk += res.junk; timeout |= res.timeout; last = res.log.join("; ") || "no valid command";
+          valid += res.valid; junk += res.junk + (res.tol || 0); timeout |= res.timeout; last = res.log.join("; ") || "no valid command";
           if (res.checks.length) { checked = true; if (first == null) first = res.checks[0] ? 1 : 0; if (res.checks.some(Boolean)) ok = true; }
         }
         if (!ok && !checked) { enter(); ok = !!m.h.check(it.key); leave(); if (first == null) first = ok ? 1 : 0; }   /* nunca escreveu CHECK: verificação implícita no fim, formato "tolerado" */

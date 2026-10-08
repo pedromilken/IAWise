@@ -61,19 +61,29 @@ module.exports = {
     const { SIMS, TASKS, LANG, LESSONS, GUESS } = w.__IA;
     const TURNS = Math.max(1, (opts && opts.turnos) || 6);
 
+    /* Idiomas: o IAWise tem pt e en completos. Outro idioma (es, fr...) é montado UMA vez a partir do pt, passando cada texto
+       (aulas, tarefas, dicas, rótulos e mensagens dos simuladores) pelo cache de tradução do laboratório (LAB.tr). Os
+       simuladores montam no idioma pedido, como se a ferramenta tivesse esse pacote de idioma. */
+    const deepMap = (o, f) => Array.isArray(o) ? o.map(x => deepMap(x, f)) : o && typeof o === "object" ? Object.fromEntries(Object.entries(o).map(([k, v]) => [k, deepMap(v, f)])) : typeof o === "string" ? f(o) : o;
+    const built = {};
+    const ensureLang = l => { if (l === "pt" || l === "en") return; const n = (() => { try { return Object.keys(JSON.parse(require("fs").readFileSync(require("path").join(__dirname, "idiomas", l + ".json"), "utf8"))).length; } catch (e) { return 0; } })();
+      if (built[l] === n && LANG[l]) return; LANG[l] = deepMap(LANG.pt, v => LAB.tr(l, v)); built[l] = n; };
+    const L = l => (ensureLang(l), LANG[l] || LANG.pt), X = (l, s) => L(l).lessons[s];
     /* monta um simulador num contêiner novo, com o sorteio do contexto */
     function mount(lesson, lang, r, keepClock) {
       w.Math.random = r; if (!keepClock) clock = 1700000000000 + Math.floor(r() * 1e9);
       const el = w.document.createElement("div"); w.document.body.append(el);
-      tq = []; const h = SIMS[lesson.sim].mount(el, { s: k => ((LANG[lang] || LANG.pt).sims[lesson.sim] || {})[k] || k, refreshTasks() {}, lang }); flush();
+      tq = []; const LL = L(lang); const h = SIMS[lesson.sim].mount(el, { s: k => (LL.sims[lesson.sim] || {})[k] || k, refreshTasks() {}, lang }); flush();
       return { el, h, close() { try { h.destroy && h.destroy(); } catch (e) {} el.remove(); } };
     }
     const items = [], byId = {}, freeTasks = [];
     for (const l of LESSONS) { if (!l.sim) continue;
-      for (const tk of TASKS[l.sim]) { let free = false; try { const m = mount(l, "pt", LAB.makeRng("gratuita", l.id, tk.id)); free = !!m.h.check(tk.k || tk.id); m.close(); } catch (e) { free = true; }
+      for (const tk of TASKS[l.sim]) { let free = false;   /* um erro aqui é defeito do laboratório, não tarefa "gratuita": falha alto */
+        try { const m = mount(l, "pt", LAB.makeRng("gratuita", l.id, tk.id)); free = !!m.h.check(tk.k || tk.id); m.close(); }
+        catch (e) { throw new Error("O simulador " + l.sim + " (" + l.id + ") não montou sem navegador: " + e.message); }
         if (free) { freeTasks.push(l.id + ":" + tk.id); continue; }
         const it = { id: l.id + ":" + tk.id, skill: l.id, type: l.sim, d: tk.d, c: GUESS, task: tk.id, key: tk.k || tk.id, lesson: l }; items.push(it); byId[it.id] = it; } }
-    const L = l => LANG[l] || LANG.pt, X = (l, s) => L(l).lessons[s];
+
     const skillName = s => X("pt", s).name + " (" + s + ")";
     function notes(lang, skill, exclude) {
       const x = X(lang, skill), others = items.filter(i => i.skill === skill && i.id !== exclude);
@@ -136,7 +146,7 @@ module.exports = {
       }
       flush(); return out;
     }
-    const SYS = l => `You are role-playing an adult BEGINNER studying ${l === "en" ? "" : ""}artificial intelligence and neural networks in a game with interactive simulators. The game interface is in ${l === "en" ? "English" : "Portuguese"}. You only know what is written in your NOTES below; if the NOTES do not cover the task, act the way a beginner would try, without using knowledge you are not supposed to have.
+    const SYS = l => `You are role-playing an adult BEGINNER studying ${l === "en" ? "" : ""}artificial intelligence and neural networks in a game with interactive simulators. The game interface is in ${LAB.langName(l)}. You only know what is written in your NOTES below; if the NOTES do not cover the task, act the way a beginner would try, without using knowledge you are not supposed to have.
 Each turn you see the simulator controls and its visible text. Reply ONLY with commands, one per line (at most 6 per turn), with the control number without brackets (e.g. SET 2 0.5):
 SET <n> <value> | CHOOSE <n> <option> | CLICK <n> [times, at most 10] | TOGGLE <n> | TAP <n> <x> <y> (canvas) | CHECK
 Write CHECK when you believe the task is accomplished. You have ${TURNS} turns.`;
@@ -186,7 +196,7 @@ Write CHECK when you believe the task is accomplished. You have ${TURNS} turns.`
       dominioPt: "inteligência artificial e redes neurais (simuladores)", dominioEn: "artificial intelligence and neural networks", idiomas: ["pt", "en"], passo: 2, chamadasPorTentativa: 4,
       padrao: { habilidades: LESSONS.filter(l => l.sim).map(l => l.id), itensPorHabilidade: 4 },
       skills: LESSONS.filter(l => l.sim).map(l => ({ id: l.id, area: l.world })), items, byId, freeTasks,
-      area: s => s.slice(0, 2), skillName, langName: l => ({ pt: "Portuguese", en: "English" })[l] || l, notes, attempt,
+      area: s => s.slice(0, 2), skillName, langName: LAB.langName, notes, attempt, coletar: (lang) => { if (lang !== "en") { delete built[lang]; ensureLang(lang); } },
       tutorTask: (lang, it) => { const x = X(lang, it.skill); return { task: "LESSON: " + x.name + "\nTASK IN THE SIMULATOR: " + x.tasks[it.task].t + "\nTHE STUDENT VERIFIED THE TASK BUT IT IS NOT DONE YET.", correct: "", reference: x.tasks[it.task].h }; },
       preview: (lang, it, notesText, r) => { const m = mount(it.lesson, lang, r); try { return SYS(lang) + "\n\nNOTES:\n" + notesText + "\n\nTASK: " + X(lang, it.skill).tasks[it.task].t + "\n" + describe(m.el); } finally { m.close(); } },
       limites: ["O agente não vê o desenho do canvas, só o texto escrito nele (com coordenadas); tarefas que dependem de formas ou cores ficam mais difíceis (a C1 mostra quais).",

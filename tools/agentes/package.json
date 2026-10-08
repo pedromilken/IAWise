@@ -1,0 +1,6 @@
+{
+  "name": "iawise-laboratorio-agentes",
+  "private": true,
+  "description": "Dependência do laboratório de agentes do IAWise: jsdom monta os simuladores sem navegador.",
+  "dependencies": { "jsdom": "^24.1.3" }
+}
